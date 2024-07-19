@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.dags.plugins.RestaurantInfoCrawler import *
+from plugins.RestaurantInfoCrawler import *
 
 import pandas as pd
 from datetime import datetime, timedelta
