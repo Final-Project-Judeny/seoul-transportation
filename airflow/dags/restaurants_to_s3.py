@@ -51,7 +51,7 @@ with DAG(
 
     upload_crawl_data_to_s3 = PythonOperator(
         task_id='upload_crawl_data_to_s3',
-        python_callable=upload_crawl_data_to_s3
+        python_callable=upload_crawl_data_to_s3,
         op_kwargs={
             'base_key': 'tour/restaurants/',
             'bucket_name': '{{ var.value.s3_bucket_name }}'
