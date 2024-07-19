@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from plugins.RestaurantInfoCrawler import *
+from RestaurantInfoCrawler import *
 
 import pandas as pd
 from datetime import datetime, timedelta
@@ -16,7 +16,7 @@ default_args = {
 }
 
 with DAG(
-    'RestaurantInfo_dag',
+    's3_upload_restaurants',
     default_args=default_args,
     description='Crawl restaurant data from the web',
     schedule_interval="0 0 * * 2",
