@@ -53,7 +53,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
             except json.JSONDecodeError as e:
                 print(f"JSON 디코딩 오류: {e}")
             except TypeError as e:
-                print(f"TypeError - row['area'] 데이터 없음")
+                print(f"TypeError - " + row['area'] + " 지역 데이터 없음")
         else:
             print(f"요청 실패: {response.status_code}")
     
