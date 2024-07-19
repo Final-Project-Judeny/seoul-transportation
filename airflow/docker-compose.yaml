@@ -310,7 +310,7 @@ services:
       DIRECTORY_NAME: ${DIRECTORY_NAME:-project}
       DESTINATION_PATH: ${DESTINATION_PATH:-/app/sync}
       SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow/dags}
-      INTERVAL: ${INTERVAL:-30}
+      INTERVAL: ${INTERVAL:-90}
 
   git-sync-plugins:
     image: databurst/git-sync:latest
@@ -325,7 +325,7 @@ services:
       DIRECTORY_NAME: ${DIRECTORY_NAME:-project}
       DESTINATION_PATH: ${DESTINATION_PATH:-/app/sync}
       SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow/plugins}
-      INTERVAL: ${INTERVAL:-30}
+      INTERVAL: ${INTERVAL:-90}
   
 
 volumes:
