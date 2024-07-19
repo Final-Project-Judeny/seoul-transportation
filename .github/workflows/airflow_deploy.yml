@@ -21,12 +21,11 @@ jobs:
             cd /home/ubuntu
             sudo rm -rf seoul-transportation
             git clone git@github.com:Final-Project-Judeny/seoul-transportation.git
-            (cd /home/ubuntu/seoul-transportation/airflow && echo -e "AIRFLOW_UID=50000\nAIRFLOW_GID=0" | sudo tee /home/ubuntu/seoul-transportation/airflow/.env)
-            (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose -f /home/ubuntu/seoul-transportation/airflow/docker-compose.yaml up -d)
+            # (cd /home/ubuntu/seoul-transportation/airflow && echo -e "AIRFLOW_UID=50000\nAIRFLOW_GID=0" | sudo tee /home/ubuntu/seoul-transportation/airflow/.env)
+            # (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose -f /home/ubuntu/seoul-transportation/airflow/docker-compose.yaml up -d)
 
-
-          # (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose stop airflow-webserver airflow-scheduler)
-          # (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose rm airflow-webserver airflow-scheduler)
-          # (cd /home/ubuntu/seoul-transportation/airflow &&sudo docker-compose -f /home/ubuntu/seoul-transportation/airflow/docker-compose.yaml up -d airflow-webserver airflow-scheduler)
+            (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose stop airflow-webserver airflow-scheduler)
+            (cd /home/ubuntu/seoul-transportation/airflow && sudo docker-compose rm airflow-webserver airflow-scheduler)
+            (cd /home/ubuntu/seoul-transportation/airflow &&sudo docker-compose -f /home/ubuntu/seoul-transportation/airflow/docker-compose.yaml up -d airflow-webserver airflow-scheduler)
 
          
