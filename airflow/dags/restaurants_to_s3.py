@@ -24,7 +24,7 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    def upload_crawl_data_to_s3(base_key: str, bucket_name: str, **kwargs):
+    def upload_crawl_data_to_s3(base_key, bucket_name, execution_date, **kwargs):
         # station 정보 로드
         stations = pd.read_csv('station_info_v2.csv', sep=',')
         
@@ -37,7 +37,7 @@ with DAG(
             try:
                 # 데이터 크롤
                 result = RestaurantInfoCrawler(station)
-                file_name = f'restaurants_{station}.json'
+                file_name = f'restaurants_{station}_{execution_date}.json'
 
                 # S3에 적재
                 hook.load_string(string_data=result, key=base_key + file_name, bucket_name=bucket_name, replace=True)
@@ -54,7 +54,8 @@ with DAG(
         python_callable=upload_crawl_data_to_s3,
         op_kwargs={
             'base_key': 'tour/restaurants/',
-            'bucket_name': '{{ var.value.s3_bucket_name }}'
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
+            "execution_date": "{{ ds }}",
         },
         provide_context=True,
     )
