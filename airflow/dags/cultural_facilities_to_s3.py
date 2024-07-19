@@ -6,11 +6,7 @@ import requests
 import pandas as pd
 import json
 import io
-
-# Airflow 설정 요구
-# Connection : aws_conn_id
-# Variable : s3_bucket_name
-# Variable : s3_area_code
+import pytz
 
 # S3에서 파일을 다운로드하고 DataFrame으로 로드하는 함수
 def load_csv_from_s3(bucket_name, object_name):
@@ -19,7 +15,7 @@ def load_csv_from_s3(bucket_name, object_name):
     file_content = file_obj.get()['Body'].read().decode('utf-8')
     return pd.read_csv(io.StringIO(file_content))
 
-def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **kwargs):
+def fetch_and_upload_cultural_facilities(bucket_name, object_name, execution_date, **kwargs):
     
     existing_df = load_csv_from_s3(bucket_name, object_name)
     
@@ -27,6 +23,8 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
     service_key = "DE3jI7XDLquqXd/wMkfkM0uWUodeEdCCbEwKImXOsBA9mg7ge34GzyGBmEkt2J75EpgBxnOYj8CSkGXOLHDwWQ=="
     
     all_results = []
+    
+    kst = pytz.timezone('Asia/Seoul')
     
     for index, row in existing_df.iterrows():
         params = {
@@ -50,7 +48,7 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
                     for item in items:
                         item['area'] = row['area']
                         item['sigungu'] = row['sigungu']
-                        item['timestamp'] = datetime.now().strftime('%Y%m%d%H%M%S')
+                        item['timestamp'] = datetime.now(kst).strftime('%Y%m%d%H%M%S')
                         all_results.append(item)
             except json.JSONDecodeError as e:
                 print(f"JSON 디코딩 오류: {e}")
@@ -58,7 +56,7 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
             print(f"요청 실패: {response.status_code}")
     
     # 결과를 JSON 형식으로 변환
-    json_data = json.dumps(all_results, ensure_ascii=False)
+    json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
     s3_path = "tour/cultural_facilities/수도권_문화시설_정보_" + execution_date + ".json"
@@ -80,12 +78,12 @@ with DAG(
 ) as dag:
     
     fetch_and_upload_cultural_facilities_task = PythonOperator(
-        task_id="fetch_and_upload_tourist_spots",
-        python_callable=fetch_and_upload_tourist_spots,
+        task_id="fetch_and_upload_cultural_facilities",
+        python_callable=fetch_and_upload_cultural_facilities,
         op_kwargs={
             "bucket_name": "{{ var.value.s3_bucket_name }}",
             "object_name": "{{ var.value.s3_areaCode }}",
-            "execution_date": "{{ ts }}",
+            "execution_date": "{{ ds }}",
         },
         provide_context=True,
     )
