@@ -52,11 +52,13 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
                         all_results.append(item)
             except json.JSONDecodeError as e:
                 print(f"JSON 디코딩 오류: {e}")
+            except TypeError as e:
+                print(f"TypeError - row['area'] 데이터 없음")
         else:
             print(f"요청 실패: {response.status_code}")
     
     # 결과를 JSON 형식으로 변환
-    json_data = json.dumps(all_results, ensure_ascii=False)
+    json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
     s3_path = "tour/tourist_spots/수도권_관광지_정보_" + execution_date + ".json"
