@@ -297,10 +297,10 @@ services:
         condition: service_completed_successfully
 
 
-  git-sync-dags:
+  git-sync-all:
     image: databurst/git-sync:latest
     volumes:
-      - ./dags:${DESTINATION_PATH:-/app/sync}
+      - ../:${DESTINATION_PATH:-/app/sync}
       - ${GIT_SSH_KEY:-~/.ssh/id}:/root/.ssh/id
       # - ${GIT_SSH_KEY:-~/.ssh/}:/root/.ssh 컨테이너 /root/.ssh에 키 복사
       
@@ -309,25 +309,10 @@ services:
       GIT_BRANCH: ${GIT_BRANCH:-main}
       DIRECTORY_NAME: ${DIRECTORY_NAME:-project}
       DESTINATION_PATH: ${DESTINATION_PATH:-/app/sync}
-      SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow/dags}
+      SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow}
       INTERVAL: ${INTERVAL:-60}
     restart: always
 
-  git-sync-plugins:
-    image: databurst/git-sync:latest
-    volumes:
-      - ./plugins:${DESTINATION_PATH:-/app/sync/plugins}
-      - ${GIT_SSH_KEY:-~/.ssh/id}:/root/.ssh/id
-      # - ${GIT_SSH_KEY:-~/.ssh/}:/root/.ssh 컨테이너 /root/.ssh에 키 복사
-      
-    environment:
-      REPO_URL: ${REPO_URL:-git@github.com:Final-Project-Judeny/seoul-transportation.git}
-      GIT_BRANCH: ${GIT_BRANCH:-main}
-      DIRECTORY_NAME: ${DIRECTORY_NAME:-project}
-      DESTINATION_PATH: ${DESTINATION_PATH:-/app/sync}
-      SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow/plugins}
-      INTERVAL: ${INTERVAL:-60}
-    restart: always
 
 
 volumes:
