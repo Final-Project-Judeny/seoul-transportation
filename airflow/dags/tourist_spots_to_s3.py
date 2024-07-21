@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook 
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import pandas as pd
 import json
@@ -75,8 +75,14 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
 with DAG(
     dag_id="s3_upload_tourist_spots",
     start_date=datetime(2024, 7, 1),
-    schedule_interval=None,
+    schedule_interval="0 11 * * 2",
     catchup=False,
+    default_args={
+        "retires" : 1,
+        "retry_delay" : timedelta(minutes=3),
+        "depends_on_past" : False,
+    },
+    timezone = 'Asia/Seoul'
 ) as dag:
     
     fetch_and_upload_tourist_spots_task = PythonOperator(
