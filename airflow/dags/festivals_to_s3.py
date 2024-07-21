@@ -7,6 +7,7 @@ import pandas as pd
 import json
 import io
 import pytz
+import xmltodict
 
 # S3에서 파일을 다운로드하고 DataFrame으로 로드하는 함수
 def load_csv_from_s3(bucket_name, object_name):
@@ -70,6 +71,47 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
         bucket_name=bucket_name,
         replace=True
     )
+    
+def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
+    
+    url = "http://apis.data.go.kr/B551011/KorService1/searchFestival1"
+    service_key = "DE3jI7XDLquqXd/wMkfkM0uWUodeEdCCbEwKImXOsBA9mg7ge34GzyGBmEkt2J75EpgBxnOYj8CSkGXOLHDwWQ=="
+    
+    params = {
+        "numOfRows" : 3000,
+        "MobileOS" : "ETC",
+        "MobileApp" : "Metravel",
+        "_type" : "json",
+        "listYN" : "Y",
+        "eventStartDate" : "20180101",
+        "serviceKey" : service_key
+    }
+    
+    response = requests.get(url, params=params)
+    data_json = None
+    
+    if response.status_code == 200:
+        try:
+            data_dict = xmltodict.parse(response.content)
+            items = data_dict['response']['body']['items']['item']
+            data_json = json.dumps(items, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error occur during collecting festival specifics : {e}")
+            return
+
+        s3_path = f"tour/festivals_info/수도권_축제행사_정보(상세)_" +  execution_date  +".json"
+        s3_hook = S3Hook(aws_conn_id='aws_conn_id')
+        s3_hook.load_string(
+            string_data=data_json,
+            key=s3_path,
+            bucket_name=bucket_name,
+            replace=True
+        )
+
+        print(f"Uploaded data to s3://{bucket_name}/{s3_path}")
+    else:
+        print(f"Failed to fetch data : HTTP {response.status_code}")
+    
 
 # DAG 정의
 with DAG(
@@ -95,5 +137,15 @@ with DAG(
         },
         provide_context=True,
     )
+    
+    fetch_and_upload_festivals_specifics_task = PythonOperator(
+        task_id="fetch_and_upload_festivals_specifics",
+        python_callable=fetch_and_upload_festivals_specifics,
+        op_kwargs={
+            "bucket_name": "{{ var.value.s3_bucket_name }}",
+            "execution_date": "{{ ds }}",
+        },
+        provide_context=True,
+    )
 
-fetch_and_upload_festivals_task
+fetch_and_upload_festivals_task >> fetch_and_upload_festivals_specifics_task

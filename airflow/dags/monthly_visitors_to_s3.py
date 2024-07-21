@@ -26,6 +26,7 @@ def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
     }
 
     response = requests.get(url, params=params)
+    data_json = None
 
     if response.status_code == 200:
         try:
