@@ -61,7 +61,7 @@ def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path = "tour/tourist_spots/수도권_레포츠_정보_" + execution_date + ".json"
+    s3_path = "tour/leisure_sports/수도권_레포츠_정보_" + execution_date + ".json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
