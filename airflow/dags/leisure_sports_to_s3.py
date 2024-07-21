@@ -15,7 +15,7 @@ def load_csv_from_s3(bucket_name, object_name):
     file_content = file_obj.get()['Body'].read().decode('utf-8')
     return pd.read_csv(io.StringIO(file_content))
 
-def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwargs):
+def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **kwargs):
     
     existing_df = load_csv_from_s3(bucket_name, object_name)
     
@@ -33,7 +33,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
             "MobileApp": "Metravel",
             "_type": "json",
             "listYN": "Y",
-            "contentTypeId": 15,
+            "contentTypeId": 28,
             "areaCode": row['areaCode'],
             "sigunguCode": row['sigunguCode'],
             "serviceKey": service_key,
@@ -61,7 +61,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path = "tour/festivals/수도권_축제행사_정보_" + execution_date + ".json"
+    s3_path = "tour/leisure_sports/수도권_레포츠_정보_" + execution_date + ".json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
@@ -73,7 +73,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
 
 # DAG 정의
 with DAG(
-    dag_id="s3_upload_festivals",
+    dag_id="s3_upload_leisure_sports",
     start_date=datetime(2024, 7, 1),
     schedule_interval="0 11 * * 2",
     catchup=False,
@@ -85,9 +85,9 @@ with DAG(
     timezone = 'Asia/Seoul'
 ) as dag:
     
-    fetch_and_upload_festivals_task = PythonOperator(
-        task_id="fetch_and_upload_festivals",
-        python_callable=fetch_and_upload_festivals,
+    fetch_and_upload_leisure_sports_task = PythonOperator(
+        task_id="fetch_and_upload_leisure_sports",
+        python_callable=fetch_and_upload_leisure_sports,
         op_kwargs={
             "bucket_name": "{{ var.value.s3_bucket_name }}",
             "object_name": "{{ var.value.s3_areaCode }}",
@@ -96,4 +96,4 @@ with DAG(
         provide_context=True,
     )
 
-fetch_and_upload_festivals_task
+fetch_and_upload_leisure_sports_task
