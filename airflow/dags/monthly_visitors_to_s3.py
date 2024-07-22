@@ -61,7 +61,6 @@ with DAG(
         'retry_delay': timedelta(minutes=3),
         'depends_on_past': False,
     },
-    timezone='Asia/Seoul'
 ) as dag:
 
     monthly_visitors_to_s3 = PythonOperator(
