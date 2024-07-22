@@ -20,21 +20,24 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def encoding(input):
     return urllib.parse.quote(input, encoding='utf-8')
 
-
 # 다이닝코드에서 서울의 음식점 정보 크롤링하는 함수
 def RestaurantInfoCrawler(station_nm):
-    options = Options()
-    options.add_argument('--headless') # 브라우저 숨김
+    options = webdriver.ChromeOptions()
+#    options.add_argument('--headless') # 브라우저 숨김
     options.add_argument('--disable-gpu') # GPU 하드웨어 가속 미사용
     options.add_argument('--no-sandbox') # 샌드박스 모드 비활성화
+#    options.add_argument('--single-process')
+    options.add_argument("--disable-dev-shm-usage")
 
-
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    try:
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(options=options)
+    except Exception as e:
+        logging.error(f"Webdriver connection is fail.: {e}")
 
     url = "https://www.diningcode.com/list.dc?query="
     with driver:
-        driver.get(url+encoding(station_nm+'역'))
+        driver.get(url+encoding(station_nm+"역"))
         driver.implicitly_wait(1)
 
         # 크롤링 시작 시각

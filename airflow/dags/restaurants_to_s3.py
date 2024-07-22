@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from RestaurantInfoCrawler import *
+from io import StringIO
 
 import pandas as pd
 from datetime import datetime, timedelta
@@ -25,22 +26,30 @@ with DAG(
 ) as dag:
 
     def upload_crawl_data_to_s3(base_key, bucket_name, execution_date, **kwargs):
-        # station 정보 로드
-        stations = pd.read_csv('station_info_v2.csv', sep=',')
-        
         # S3 연결
         hook = S3Hook('aws_conn_id')
         task_instance = kwargs['ti']
+
+        # station 정보 로드
+        try:
+            station_key = f"{base_key}basic_data/station_info_v2.csv"
+            file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
+            stations = pd.read_csv(StringIO(file_content))
+            task_instance.log.info("Successfully read csv file.")
+        except Exception as e:
+            task_instance.log.error(f"Error occurred while read csv file: {e}")
+            raise
         
         # 모든 역에 대해 식당 정보 크롤
         for station in stations["역사명"]:
             try:
                 # 데이터 크롤
-                result = RestaurantInfoCrawler(station)
-                file_name = f'restaurants_{station}_{execution_date}.json'
+                data = RestaurantInfoCrawler(station)
+                file_name = f"restaurants_{station}_{execution_date}.json"
 
                 # S3에 적재
-                hook.load_string(string_data=result, key=base_key + file_name, bucket_name=bucket_name, replace=True)
+                key = f"{base_key}restaurants/{file_name}"
+                hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
                 task_instance.log.info(f'Successfully uploaded {file_name} to S3.')
 
             except Exception as e:
@@ -53,7 +62,7 @@ with DAG(
         task_id='upload_crawl_data_to_s3',
         python_callable=upload_crawl_data_to_s3,
         op_kwargs={
-            'base_key': 'tour/restaurants/',
+            'base_key': 'tour/',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
             "execution_date": "{{ ds }}",
         },
