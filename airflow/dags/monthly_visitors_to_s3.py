@@ -10,9 +10,8 @@ import xmltodict
 def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
     
     # execution_date 기준 2개월 전의 첫날과 마지막날 설정
-    target_month = execution_date - timedelta(days=execution_date.day)
-    start_date = target_month.replace(day=1) - timedelta(days=target_month.day)
-    start_date = start_date.replace(day=1)
+    target_month = (execution_date.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+    start_date = target_month.replace(day=1)
     end_date = (start_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
     
     url = "http://apis.data.go.kr/B551011/DataLabService/locgoRegnVisitrDDList"
