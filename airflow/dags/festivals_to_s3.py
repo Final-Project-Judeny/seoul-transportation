@@ -92,9 +92,16 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
     
     if response.status_code == 200:
         try:
-            data_dict = xmltodict.parse(response.content)
-            items = data_dict['response']['body']['items']['item']
-            data_json = json.dumps(items, ensure_ascii=False, indent=4)
+            data = response.json()  # JSON 응답 데이터 파싱
+            if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
+                items = data['response']['body']['items']['item']
+                data_json = json.dumps(items, ensure_ascii=False, indent=4)
+            else:
+                print("Response JSON format is unexpected.")
+                return
+        except json.JSONDecodeError as e:
+            print(f"JSON 디코딩 오류: {e}")
+            return
         except Exception as e:
             print(f"Error occur during collecting festival specifics : {e}")
             return
