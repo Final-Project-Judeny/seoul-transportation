@@ -82,7 +82,6 @@ with DAG(
         "retry_delay" : timedelta(minutes=3),
         "depends_on_past" : False,
     },
-    timezone = 'Asia/Seoul'
 ) as dag:
     
     fetch_and_upload_tourist_spots_task = PythonOperator(
