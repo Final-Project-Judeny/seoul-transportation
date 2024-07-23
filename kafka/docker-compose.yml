@@ -83,7 +83,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.connect == true
+          - node.labels.zookeeper == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -109,7 +109,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.connect == true
+          - node.labels.zookeeper == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -194,7 +194,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.connect == true
+          - node.labels.zookeeper == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -219,7 +219,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.connect == true
+          - node.labels.zookeeper == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -256,6 +256,31 @@ services:
         parallelism: 1
       restart_policy:
         condition: any
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    ports:
+      - "7777:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=kafka_ui
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka1:19092 #kafka-node2:9092,kafka-node3:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zoo1:2181
+    networks:
+      - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.zookeeper == true
+      replicas: 1
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: any
+
+
 
 volumes:
   pg_data: {}
