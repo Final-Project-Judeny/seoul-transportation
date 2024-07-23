@@ -12,6 +12,9 @@ services:
       ZOOKEEPER_SERVERS: zoo1:2888:3888
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -50,6 +53,9 @@ services:
 
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -71,6 +77,9 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -94,6 +103,9 @@ services:
       KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://kafka1:19092
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -152,6 +164,9 @@ services:
         
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -173,6 +188,9 @@ services:
       KSQL_KSQL_SERVICE_ID: ksqldb-server_
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -195,6 +213,9 @@ services:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -223,6 +244,9 @@ services:
       CDK_CLUSTERS_0_KAFKACONNECTS_0_NAME: "full stack kafka connect"
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
