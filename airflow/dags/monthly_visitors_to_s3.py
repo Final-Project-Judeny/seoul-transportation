@@ -37,7 +37,6 @@ def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
             csv_data = df.to_csv()
             s3_path_csv = f"tour/visitors/{start_date.strftime('%Y')}/visitors_count_{start_date.strftime('%Y%m')}.csv"
             
-            s3_path = f"tour/visitors/{start_date.strftime('%Y')}/visitors_count_{start_date.strftime('%Y%m')}.json"
             s3_hook = S3Hook(aws_conn_id='aws_conn_id')
             s3_hook.load_string(
                 string_data=csv_data,
@@ -45,7 +44,7 @@ def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
                 bucket_name=bucket_name,
                 replace=True
             )
-            print(f"Uploaded data to s3://{bucket_name}/{s3_path}")        
+            print(f"Uploaded data to s3://{bucket_name}/{s3_path_csv}")        
         except Exception as e:
             print(f"Error occur during collecting visitors data for {start_date} to {end_date}: {e}")
             return
