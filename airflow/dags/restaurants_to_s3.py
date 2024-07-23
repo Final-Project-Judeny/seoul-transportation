@@ -63,7 +63,7 @@ with DAG(
         python_callable=upload_crawl_data_to_s3,
         op_kwargs={
             'base_key': 'tour/',
-            'bucket_name': '{{ var.value.s3_bucket_name }}',
+            'bucket_name': "{{ var.value.s3_bucket_name }}",
             "execution_date": "{{ ds }}",
         },
         provide_context=True,
