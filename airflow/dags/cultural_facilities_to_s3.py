@@ -73,7 +73,7 @@ def fetch_and_upload_cultural_facilities(bucket_name, object_name, execution_dat
     
     df = pd.DataFrame(all_results)
     csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/cultural_facilities/수도권_문화시설_정보(최신).csv"
+    s3_path_csv = "tour/cultural_facilities/cultural_facilities.csv"
     s3_hook.load_string(
         string_data=csv_data,
         key=s3_path_csv,
