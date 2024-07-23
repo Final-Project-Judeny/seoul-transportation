@@ -61,12 +61,22 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path = "tour/tourist_spots/수도권_관광지_정보_" + execution_date + ".json"
+    s3_path_json = "tour/tourist_spots/수도권_관광지_정보_" + execution_date + ".json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
         string_data=json_data,
-        key=s3_path,
+        key=s3_path_json,
+        bucket_name=bucket_name,
+        replace=True
+    )
+    
+    df = pd.DataFrame(all_results)
+    csv_data = df.to_csv(index=False)
+    s3_path_csv = "tour/tourist_spots/수도권_관광지_정보(최신).csv"
+    s3_hook.load_string(
+        string_data=csv_data,
+        key=s3_path_csv,
         bucket_name=bucket_name,
         replace=True
     )
