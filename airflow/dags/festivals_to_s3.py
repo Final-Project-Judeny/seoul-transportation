@@ -74,7 +74,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     
     df = pd.DataFrame(all_results)
     csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/festivals/festivals.csv"
+    s3_path_csv = "tour/festivals/festivals/festivals.csv"
     s3_hook.load_string(
         string_data=csv_data,
         key=s3_path_csv,
@@ -120,7 +120,7 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
                 
                 df = pd.DataFrame(items)
                 csv_data = df.to_csv(index=False)
-                s3_path_csv = "tour/festivals_info/festival_specifics.csv"
+                s3_path_csv = "tour/festivals_info/festivals_info/festival_specifics.csv"
                 s3_hook.load_string(
                     string_data=csv_data,
                     key=s3_path_csv,
