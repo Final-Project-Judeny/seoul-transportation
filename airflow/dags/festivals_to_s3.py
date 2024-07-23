@@ -62,15 +62,27 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path = "tour/festivals/수도권_축제행사_정보_" + execution_date + ".json"
+    s3_path_json = "tour/festivals/수도권_축제행사_정보_" + execution_date + ".json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
         string_data=json_data,
-        key=s3_path,
+        key=s3_path_json,
         bucket_name=bucket_name,
         replace=True
     )
+    
+    df = pd.DataFrame(all_results)
+    csv_data = df.to_csv(index=False)
+    s3_path_csv = "tour/festivals/수도권_축제행사_정보(최신).csv"
+    s3_hook.load_string(
+        string_data=csv_data,
+        key=s3_path_csv,
+        bucket_name=bucket_name,
+        replace=True
+    )
+    
+    
     
 def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
     
@@ -96,6 +108,26 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
             if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
                 items = data['response']['body']['items']['item']
                 data_json = json.dumps(items, ensure_ascii=False, indent=4)
+                
+                s3_path_json = f"tour/festivals_info/수도권_축제행사_정보(상세)_" +  execution_date  +".json"                
+                s3_hook = S3Hook(aws_conn_id='aws_conn_id')
+                s3_hook.load_string(
+                    string_data=data_json,
+                    key=s3_path_json,
+                    bucket_name=bucket_name,
+                    replace=True
+                )
+                
+                df = pd.DataFrame(items)
+                csv_data = df.to_csv(index=False)
+                s3_path_csv = "tour/festivals_info/수도권_축제행사_정보(상세,최신).csv"
+                s3_hook.load_string(
+                    string_data=csv_data,
+                    key=s3_path_csv,
+                    bucket_name=bucket_name,
+                    replace=True
+                )              
+                
             else:
                 print("Response JSON format is unexpected.")
                 return
@@ -106,16 +138,7 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
             print(f"Error occur during collecting festival specifics : {e}")
             return
 
-        s3_path = f"tour/festivals_info/수도권_축제행사_정보(상세)_" +  execution_date  +".json"
-        s3_hook = S3Hook(aws_conn_id='aws_conn_id')
-        s3_hook.load_string(
-            string_data=data_json,
-            key=s3_path,
-            bucket_name=bucket_name,
-            replace=True
-        )
 
-        print(f"Uploaded data to s3://{bucket_name}/{s3_path}")
     else:
         print(f"Failed to fetch data : HTTP {response.status_code}")
     
