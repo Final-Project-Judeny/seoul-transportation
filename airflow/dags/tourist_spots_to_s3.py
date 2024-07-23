@@ -73,7 +73,7 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
     
     df = pd.DataFrame(all_results)
     csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/tourist_spots/수도권_관광지_정보(최신).csv"
+    s3_path_csv = "tour/tourist_spots/tourist_spots.csv"
     s3_hook.load_string(
         string_data=csv_data,
         key=s3_path_csv,

@@ -73,7 +73,7 @@ def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **
     
     df = pd.DataFrame(all_results)
     csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/leisure_sports/수도권_레포츠_정보(최신).csv"
+    s3_path_csv = "tour/leisure_sports/leisure_sports.csv"
     s3_hook.load_string(
         string_data=csv_data,
         key=s3_path_csv,
