@@ -63,7 +63,7 @@ def RestaurantInfoCrawler(station_nm):
                 time.sleep(1)
             except:
                 # 더보기 버튼이 없을 때 while문 종료
-                logging.info("No more 'Load more' button or an error occurred.")
+                logging.info("No more 'Load more' button.")
                 break
 
         restaurants = []
