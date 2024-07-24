@@ -21,7 +21,7 @@ with DAG(
     's3_upload_restaurants',
     default_args=default_args,
     description='Crawl restaurant data from the web',
-    schedule_interval="0 0 * * 2",
+    schedule_interval="0 11 * * 2",
     start_date=datetime(2024, 7, 1),
     catchup=False,
 ) as dag:

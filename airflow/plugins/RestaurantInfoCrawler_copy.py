@@ -69,7 +69,7 @@ def RestaurantInfoCrawler(station_nm):
         restaurants = []
 
         # 리스트에서 식당 데이터 크롤링
-        restaurant_elements = driver.find_elements(By.XPATH, '//*[contains(@class, "PoiBlock")]')
+        restaurant_elements = driver.find_elements(By.XPATH, '//a[contains(@class, "PoiBlock")]')
 
         for restaurant in restaurant_elements:
             try:
