@@ -30,6 +30,7 @@ def RestaurantInfoCrawler(station_nm):
     try:
         remote_webdriver = 'remote_chromedriver'
         driver = webdriver.Remote(f'http://{remote_webdriver}:4444/wd/hub', options=options)
+        #driver = webdriver.Chrome(options=options)
     except Exception as e:
         logging.error(f"Webdriver connection is fail.: {e}")
         logging.error(driver.page_source)  # 페이지 소스 출력
@@ -79,7 +80,6 @@ def RestaurantInfoCrawler(station_nm):
 
                 # 리뷰평점 추출
                 score = restaurant.find_element(By.XPATH, './/p[@class="Score"]').text # 점수
-                usrscore = restaurant.find_element(By.XPATH, './/p[@class="UserScore"]').text # 별점
 
                 cat_element = restaurant.find_element(By.XPATH, './/p[@class="Category"]')
                 category = [cat.text for cat in cat_element.find_elements(By.XPATH, './/span')]
@@ -99,7 +99,6 @@ def RestaurantInfoCrawler(station_nm):
                 restaurants.append({
                     'name': name,
                     'score': score,
-                    'usr_score': usrscore,
                     'category': category,
                     'hashtag': hashtag,
                     'image': image_url,
