@@ -43,7 +43,7 @@ with DAG(
         
         # 모든 역에 대해 식당 정보 크롤
         result = []
-        for station in stations["역사명"]:
+        for station in stations["역사명"].unique():
             try:
                 # 데이터 크롤
                 data = RestaurantInfoCrawler(station)
