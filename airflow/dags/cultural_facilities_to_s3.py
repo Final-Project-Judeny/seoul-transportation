@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook 
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import pandas as pd
 import json
@@ -70,13 +70,28 @@ def fetch_and_upload_cultural_facilities(bucket_name, object_name, execution_dat
         bucket_name=bucket_name,
         replace=True
     )
+    
+    df = pd.DataFrame(all_results)
+    csv_data = df.to_csv(index=False)
+    s3_path_csv = "tour/cultural_facilities/cultural_facilities/cultural_facilities.csv"
+    s3_hook.load_string(
+        string_data=csv_data,
+        key=s3_path_csv,
+        bucket_name=bucket_name,
+        replace=True
+    )
 
 # DAG 정의
 with DAG(
     dag_id="s3_upload_cultural_facilities",
-    start_date=datetime(2024, 7, 1),
-    schedule_interval=None,
+    start_date=datetime(2024, 7, 19),
+    schedule_interval="0 11 * * 2",
     catchup=False,
+    default_args={
+        "retires" : 1,
+        "retry_delay" : timedelta(minutes=3),
+        "depends_on_past" : False,
+    },
 ) as dag:
     
     fetch_and_upload_cultural_facilities_task = PythonOperator(

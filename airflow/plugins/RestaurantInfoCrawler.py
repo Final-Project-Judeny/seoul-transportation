@@ -9,12 +9,8 @@ import json
 import logging
 from datetime import datetime
 
-# station 정보 로드
-#stations = pd.read_csv('station_info_v2.csv', sep=',')
-
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 # 한글을 utf-8로 인코딩하는 함수
 def encoding(input):
@@ -26,14 +22,15 @@ def RestaurantInfoCrawler(station_nm):
     options.add_argument('--headless') # 브라우저 숨김
     options.add_argument('--disable-gpu') # GPU 하드웨어 가속 미사용
     options.add_argument('--no-sandbox') # 샌드박스 모드 비활성화
-#    options.add_argument('--single-process')
-    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument('--disable-dev-shm-usage') # 공유 메모리 비활성화
+    options.add_argument('--remote-debugging-port=9222') # 디버깅 포트 설정
 
     try:
         service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service=service, options=options)
     except Exception as e:
         logging.error(f"Webdriver connection is fail.: {e}")
+        return None
 
     url = "https://www.diningcode.com/list.dc?query="
     with driver:
@@ -112,14 +109,6 @@ def RestaurantInfoCrawler(station_nm):
             except Exception as e:
                 logging.error(f"Error occurred: {e}")
                 continue
-        
-        """
-        # 결과 출력
-        for i, restaurant in enumerate(restaurants):
-            print(f'{i+1}.')
-            for info in restaurants[i].keys():
-                print(restaurants[i][info])
-        """
 
         # 결과 데이터 구성
         result = {
@@ -135,8 +124,6 @@ def RestaurantInfoCrawler(station_nm):
 
     return result_json
 
-
 if __name__ == "__main__":
-#    test = RestaurantInfoCrawler(stations['역사명'][0])
     test = RestaurantInfoCrawler('강남')
     print(test)

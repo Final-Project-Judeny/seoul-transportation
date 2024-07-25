@@ -72,11 +72,12 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- selenium webdriver_manager pandas}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- selenium webdriver_manager pandas xmltodict}
   volumes:
     - ./dags:/opt/airflow/dags
+    - ./plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -296,20 +297,30 @@ services:
         condition: service_completed_successfully
 
 
-  git-sync:
+  git-sync-all:
     image: databurst/git-sync:latest
     volumes:
-      - ./dags:${DESTINATION_PATH:-/app/sync}
-      - ${GIT_SSH_KEY:-~/.ssh/id_rsa}:/root/.ssh/id_rsa
+      - ../:${DESTINATION_PATH:-/app/sync}
+      - ${GIT_SSH_KEY:-~/.ssh/id}:/root/.ssh/id
+      # - ${GIT_SSH_KEY:-~/.ssh/}:/root/.ssh 컨테이너 /root/.ssh에 키 복사
       
     environment:
       REPO_URL: ${REPO_URL:-git@github.com:Final-Project-Judeny/seoul-transportation.git}
       GIT_BRANCH: ${GIT_BRANCH:-main}
       DIRECTORY_NAME: ${DIRECTORY_NAME:-project}
-      # SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow/dags}
       DESTINATION_PATH: ${DESTINATION_PATH:-/app/sync}
-      INTERVAL: ${INTERVAL:-30}
+      SUBFOLDER_PATH: ${SUBFOLDER_PATH:-airflow}
+      INTERVAL: ${INTERVAL:-60}
+    restart: always
+
+  selenium:
+    container_name: remote_chromedriver
+    image: selenium/standalone-chrome:latest
+    ports:
+      - 4444:4444
+    restart: always
+
+
 
 volumes:
   postgres-db-volume:
-
