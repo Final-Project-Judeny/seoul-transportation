@@ -42,22 +42,26 @@ with DAG(
             raise
         
         # 모든 역에 대해 식당 정보 크롤
-        for station in stations["역사명"]:
+        result = []
+        for station in stations["역사명"].unique():
             try:
                 # 데이터 크롤
                 data = RestaurantInfoCrawler(station)
-                file_name = f"restaurants_{station}_{execution_date}.json"
-
-                # S3에 적재
-                key = f"{base_key}restaurants/{file_name}"
-                hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
-                task_instance.log.info(f'Successfully uploaded {file_name} to S3.')
-
+                result.append(data)
             except Exception as e:
                 task_instance.log.error(f"Error occurred while processing {station}: {e}")
                 raise
         
-        task_instance.log.info('All restaurant data successfully uploaded to S3!')
+        # S3에 적재
+        try:
+            result_json = json.dumps(result, ensure_ascii=False, indent=4)
+            file_name = f"restaurants_{execution_date}.json"
+            key = f"{base_key}restaurants/{file_name}"
+            hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
+            task_instance.log.info('All restaurant data successfully uploaded to S3!')
+        except Exception as e:
+            task_instance.log.info('Error occurred while uploading to S3: {e}')
+            raise
 
     upload_crawl_data_to_s3 = PythonOperator(
         task_id='upload_crawl_data_to_s3',
