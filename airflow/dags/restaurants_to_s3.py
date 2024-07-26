@@ -60,6 +60,7 @@ with DAG(
             if s > 200:
                 f += 1
                 s = 1
+                result = []
                 # S3에 적재
                 try:
                     result_json = json.dumps(result, ensure_ascii=False, indent=4)
@@ -70,6 +71,18 @@ with DAG(
                 except Exception as e:
                     task_instance.log.info(f"Error occurred while uploading {file_name} to S3: {e}")
                     raise
+
+        # S3에 적재 (나머지)
+        try:
+            result_json = json.dumps(result, ensure_ascii=False, indent=4)
+            file_name = f"restaurants_{f}_{execution_date}.json"
+            key = f"{base_key}restaurants/{file_name}"
+            hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
+            task_instance.log.info(f"{file_name} successfully uploaded to S3.")
+        except Exception as e:
+            task_instance.log.info(f"Error occurred while uploading {file_name} to S3: {e}")
+            raise
+        
         task_instance.log.info(f"Done!")
 
     upload_crawl_data_to_s3 = PythonOperator(
