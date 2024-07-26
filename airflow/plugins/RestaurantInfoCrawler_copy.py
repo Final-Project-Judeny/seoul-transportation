@@ -43,8 +43,8 @@ def RestaurantInfoCrawler(station_nm):
         # 로딩 대기
         try:
             WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, '.SearchMore.upper'))
-            )
+            lambda d: d.execute_script('return document.readyState') == 'complete'
+        )
         except Exception as e:
             logging.error(f"Page load timeout: {e}")
             return
@@ -56,7 +56,7 @@ def RestaurantInfoCrawler(station_nm):
         while True:
             try:
                 # 더보기 버튼 로딩 대기 후 클릭
-                more_button = WebDriverWait(driver, 10).until(
+                more_button = WebDriverWait(driver, 3, poll_frequency=0.5).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, '.SearchMore.upper'))
                 )
                 more_button.click()
