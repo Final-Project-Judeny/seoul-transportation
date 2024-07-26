@@ -6,6 +6,7 @@ from RestaurantInfoCrawler_copy import * # remote Chrome Driver 사용 test
 from io import StringIO
 
 import pandas as pd
+import json
 from datetime import datetime, timedelta
 
 default_args = {
@@ -43,32 +44,40 @@ with DAG(
         
         # 모든 역에 대해 식당 정보 크롤
         result = []
+        f = 1
+        s = 1
         for station in stations["역사명"].unique():
+            # 데이터 크롤
             try:
-                # 데이터 크롤
                 data = RestaurantInfoCrawler(station)
                 result.append(data)
+                s += 1
             except Exception as e:
                 task_instance.log.error(f"Error occurred while processing {station}: {e}")
                 raise
-        
-        # S3에 적재
-        try:
-            result_json = json.dumps(result, ensure_ascii=False, indent=4)
-            file_name = f"restaurants_{execution_date}.json"
-            key = f"{base_key}restaurants/{file_name}"
-            hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
-            task_instance.log.info('All restaurant data successfully uploaded to S3!')
-        except Exception as e:
-            task_instance.log.info('Error occurred while uploading to S3: {e}')
-            raise
+
+            # 10개 역사 단위로 파일 분리
+            if s > 10:
+                f += 1
+                s = 1
+                # S3에 적재
+                try:
+                    result_json = json.dumps(result, ensure_ascii=False, indent=4)
+                    file_name = f"restaurants_{f}_{execution_date}.json"
+                    key = f"{base_key}restaurants/{file_name}"
+                    hook.load_string(string_data=data, key=key, bucket_name=bucket_name, replace=True)
+                    task_instance.log.info(f"{file_name} successfully uploaded to S3.")
+                except Exception as e:
+                    task_instance.log.info(f"Error occurred while uploading {file_name} to S3: {e}")
+                    raise
+        task_instance.log.info(f"Done!")
 
     upload_crawl_data_to_s3 = PythonOperator(
         task_id='upload_crawl_data_to_s3',
         python_callable=upload_crawl_data_to_s3,
         op_kwargs={
             'base_key': 'tour/',
-            'bucket_name': "{{ var.value.s3_bucket_name }}",
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
             "execution_date": "{{ ds }}",
         },
         provide_context=True,
