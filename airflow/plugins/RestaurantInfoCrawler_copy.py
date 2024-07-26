@@ -43,8 +43,8 @@ def RestaurantInfoCrawler(station_nm):
         # 로딩 대기
         try:
             WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, '.SearchMore.upper'))
-            )
+            lambda d: d.execute_script('return document.readyState') == 'complete'
+        )
         except Exception as e:
             logging.error(f"Page load timeout: {e}")
             return
