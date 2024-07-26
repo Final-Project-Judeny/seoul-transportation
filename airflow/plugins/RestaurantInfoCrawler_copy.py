@@ -124,7 +124,8 @@ def RestaurantInfoCrawler(station_nm):
         """
 
         # JSON 문자열 생성
-        result = json.dumps(restaurants, ensure_ascii=False, indent=4)
+#        result = json.dumps(restaurants, ensure_ascii=False, indent=4)
+        result = restaurants
 
         logging.info(f"JSON data for {station_nm} was successfully created.")
 
