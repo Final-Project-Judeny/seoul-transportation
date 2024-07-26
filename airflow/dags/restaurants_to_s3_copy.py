@@ -45,7 +45,7 @@ with DAG(
         
         # 모든 역에 대해 식당 정보 크롤
         result = []
-        stations = stations["역사명"].unique()
+        stations = station_info["역사명"].unique()
         with ThreadPoolExecutor(max_workers=4) as executor:
             # 데이터 크롤
             try:
