@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #from RestaurantInfoCrawler import *
 from RestaurantInfoCrawler_copy import * # remote Chrome Driver 사용 test
@@ -45,7 +45,7 @@ with DAG(
         
         # 모든 역에 대해 식당 정보 크롤
         result = []
-        stations = station_info["역사명"].unique()
+        stations = station_info["역사명"].unique()[:50] # 저장 data test를 위해 50개만 진행, 전체 진행시 5시간 정도 소요 예상
         with ThreadPoolExecutor(max_workers=4) as executor:
             # 데이터 크롤
             try:
@@ -75,7 +75,6 @@ with DAG(
             'bucket_name': '{{ var.value.s3_bucket_name }}',
             "execution_date": "{{ ds }}",
         },
-        provide_context=True,
     )
 
     # 작업 순서 정의
