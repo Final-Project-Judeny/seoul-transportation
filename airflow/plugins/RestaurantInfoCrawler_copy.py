@@ -28,7 +28,7 @@ def RestaurantInfoCrawler(station_nm):
     options.add_argument(f'user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36') # user-agent를 수정해 웹 사이트의 차단을 완화
 
     try:
-        remote_webdriver = '172.18.0.3'
+        remote_webdriver = 'selenium'
         driver = webdriver.Remote(f'http://{remote_webdriver}:4444/wd/hub', options=options)
         #driver = webdriver.Chrome(options=options)
     except Exception as e:
