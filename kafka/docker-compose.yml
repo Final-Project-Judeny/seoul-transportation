@@ -257,6 +257,27 @@ services:
       restart_policy:
         condition: any
 
+  mongodb-bi-connector:
+    image: dulanic/mongodb-bi-connector:latest
+    ports:
+      - "3307:3307"
+    environment:
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017  
+      SCHEMA_REFRESH: 10
+    networks:
+      - kafka-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.zookeeper == true
+      replicas: 1
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: any
+
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     ports:
@@ -295,10 +316,6 @@ services:
         parallelism: 1
       restart_policy:
         condition: any
-
-
-
-
 
 volumes:
   pg_data: {}
