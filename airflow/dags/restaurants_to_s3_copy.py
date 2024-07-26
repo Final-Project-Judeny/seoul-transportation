@@ -20,7 +20,7 @@ default_args = {
 }
 
 with DAG(
-    's3_upload_restaurants',
+    's3_upload_restaurants_parallel',
     default_args=default_args,
     description='Crawl restaurant data from the web',
     schedule_interval="0 11 * * 2",
@@ -68,7 +68,7 @@ with DAG(
         task_instance.log.info(f"Done!")
 
     upload_crawl_data_to_s3 = PythonOperator(
-        task_id='upload_crawl_data_to_s3',
+        task_id='upload_crawl_data_to_s3_parallel',
         python_callable=upload_crawl_data_to_s3,
         op_kwargs={
             'base_key': 'tour/',
