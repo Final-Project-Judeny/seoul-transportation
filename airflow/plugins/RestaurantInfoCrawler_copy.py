@@ -115,12 +115,13 @@ def RestaurantInfoCrawler(station_nm):
             except Exception as e:
                 logging.error(f"Error occurred: {e}")
                 continue
-
+        """
         # 결과 출력
         for i, restaurant in enumerate(restaurants):
             print(f'{i+1}.')
             for info in restaurants[i].keys():
                 print(restaurants[i][info])
+        """
 
         # JSON 문자열 생성
         result = json.dumps(restaurants, ensure_ascii=False, indent=4)
