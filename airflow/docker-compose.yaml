@@ -327,7 +327,7 @@ services:
       - 4444:4444
     restart: always
 
-  chrome:
+  selenium-node-chrome:
     image: selenium/node-chrome:4.22.0
     container_name: selenium-node-chrome
     depends_on:
