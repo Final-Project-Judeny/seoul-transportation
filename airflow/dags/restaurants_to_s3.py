@@ -56,8 +56,8 @@ with DAG(
                 task_instance.log.error(f"Error occurred while processing {station}: {e}")
                 raise
 
-            # 10개 역사 단위로 파일 분리
-            if s > 10:
+            # 200개 역사 단위로 파일 분리
+            if s > 200:
                 f += 1
                 s = 1
                 # S3에 적재
