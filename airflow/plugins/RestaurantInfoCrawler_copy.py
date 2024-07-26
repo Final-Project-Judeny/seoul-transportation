@@ -55,24 +55,25 @@ def RestaurantInfoCrawler(station_nm):
         # 맛집 로딩
         while True:
             try:
-                # 더보기 버튼 클릭
+                # 더보기 버튼 로딩 대기 후 클릭
                 more_button = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, '.SearchMore.upper'))
                 )
                 more_button.click()
-                # 몇 초간 대기
-                time.sleep(1)
             except:
                 # 더보기 버튼이 없을 때 while문 종료
                 logging.info("No more 'Load more' button.")
                 break
 
+        # 리스트, 지도에서 식당, 좌표 데이터 크롤링
+        restaurant_elements = driver.find_elements(By.XPATH, '//a[contains(@class, "PoiBlock")]')
+        map_elements = driver.find_elements(By.XPATH, '//a[@class="Marker"]')
+
         restaurants = []
 
-        # 리스트에서 식당 데이터 크롤링
-        restaurant_elements = driver.find_elements(By.XPATH, '//a[contains(@class, "PoiBlock")]')
-
-        for restaurant in restaurant_elements:
+        for i in range(min(len(restaurant_elements), len(map_elements))):
+            restaurant = restaurant_elements[i]
+            map = map_elements[i]
             try:
                 # 이름 추출
                 name_element = restaurant.find_element(By.XPATH, './/div[@class="InfoHeader"]')
@@ -95,56 +96,38 @@ def RestaurantInfoCrawler(station_nm):
                 except:
                     image_url = None
 
+                # 좌표 추출
+                x = map.get_attribute('data-lng')
+                y = map.get_attribute('data-lat')
+
                 # 식당 정보 저장
                 restaurants.append({
+                    'timestamp': crawl_timestamp,
+                    'station': station_nm,
                     'name': name,
                     'score': score,
                     'category': category,
                     'hashtag': hashtag,
                     'image': image_url,
+                    'loc_x': x,
+                    'loc_y': y,
                 })
             except Exception as e:
                 logging.error(f"Error occurred: {e}")
                 continue
 
-        # 맵에서 좌표 데이터 크롤링
-        map_elements = driver.find_elements(By.XPATH, '//a[@class="Marker"]')
-
-        for i, map in enumerate(map_elements):
-            try:
-                # 좌표 추출
-                x = map.get_attribute('data-lng')
-                y = map.get_attribute('data-lat')
-
-                # 좌표 정보 추가
-                restaurants[i]['loc_x'] = x
-                restaurants[i]['loc_y'] = y
-
-            except Exception as e:
-                logging.error(f"Error occurred: {e}")
-                continue
-        
-        """
         # 결과 출력
         for i, restaurant in enumerate(restaurants):
             print(f'{i+1}.')
             for info in restaurants[i].keys():
                 print(restaurants[i][info])
-        """
-
-        # 결과 데이터 구성
-        result = {
-            'timestamp': crawl_timestamp,
-            'station': station_nm,
-            'restaurants': restaurants
-        }
 
         # JSON 문자열 생성
-        result_json = json.dumps(result, ensure_ascii=False, indent=4)
+        result = json.dumps(restaurants, ensure_ascii=False, indent=4)
 
         logging.info(f"JSON data for {station_nm} was successfully created.")
 
-    return result_json
+    return result
 
 
 if __name__ == "__main__":
