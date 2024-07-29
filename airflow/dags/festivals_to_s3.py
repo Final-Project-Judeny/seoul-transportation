@@ -8,6 +8,7 @@ import json
 import io
 import pytz
 import xmltodict
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 # S3에서 파일을 다운로드하고 DataFrame으로 로드하는 함수
 def load_csv_from_s3(bucket_name, object_name):
@@ -176,5 +177,13 @@ with DAG(
         },
         provide_context=True,
     )
+    
+    trigger_check_dag_task = TriggerDagRunOperator(
+        task_id='trigger_check_dag_festivals',
+        trigger_dag_id='s3_upload_check',
+        execution_date='{{ ds }}',
+        conf={'task': 'empty_task_festivals'},
+        wait_for_completion=False
+    )
 
-fetch_and_upload_festivals_task >> fetch_and_upload_festivals_specifics_task
+fetch_and_upload_festivals_task >> fetch_and_upload_festivals_specifics_task >> trigger_check_dag_task
