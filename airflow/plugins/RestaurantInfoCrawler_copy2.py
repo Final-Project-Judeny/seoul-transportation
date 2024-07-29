@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException
 import time
 import urllib.parse
 import json
@@ -16,8 +17,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def encoding(input):
     return urllib.parse.quote(input, encoding='utf-8')
 
+# web driver에 연결(실패시 재시도)하는 함수
+def get_webdriver(remote_webdriver, options, retries=3, delay=5):
+    driver = None
+    for attempt in range(retries):
+        try:
+            driver = webdriver.Remote(f'http://{remote_webdriver}:4444/wd/hub', options=options)
+            break
+        except WebDriverException as e:
+            logging.error(f"Webdriver connection attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay) # 잠시 대기 후 재시도
+            else:
+                raise  # 모든 재시도 실패 시 예외 발생
+    return driver
+
 # 다이닝코드에서 서울의 음식점 정보 크롤링하는 함수
-def RestaurantInfoCrawler(station_nm):
+def RestaurantInfoCrawler(args):
     options = webdriver.ChromeOptions()
     options.add_argument('--headless') # 브라우저 숨김
     options.add_argument('--disable-gpu') # GPU 하드웨어 가속 미사용
@@ -26,14 +42,35 @@ def RestaurantInfoCrawler(station_nm):
     options.add_argument('--remote-debugging-port=9222')  # 디버깅 포트 추가
     options.add_argument('--window-size=1920x1080')  # 브라우저 창 크기 설정
     options.add_argument(f'user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36') # user-agent를 수정해 웹 사이트의 차단을 완화
+    options.add_argument('--disable-extensions')  # 확장 프로그램 비활성화
+    options.add_argument('--disable-software-rasterizer')  # 소프트웨어 래스터라이저 비활성화
+    options.add_argument('--no-zygote')  # zygote 프로세스 사용 안함
+    options.add_argument('--single-process')  # 단일 프로세스 모드
+    options.add_argument('--disable-background-timer-throttling')  # 백그라운드 타이머 제한 비활성화
+    options.add_argument('--disable-backgrounding-occluded-windows')  # 백그라운드 창 비활성화
+    options.add_argument('--disable-breakpad')  # 브레이크패드 비활성화
+    options.add_argument('--disable-client-side-phishing-detection')  # 피싱 감지 비활성화
+    options.add_argument('--disable-component-update')  # 구성 요소 업데이트 비활성화
+    options.add_argument('--disable-default-apps')  # 기본 앱 비활성화
+    options.add_argument('--disable-hang-monitor')  # 행 모니터 비활성화
+    options.add_argument('--disable-ipc-flooding-protection')  # IPC 홍수 보호 비활성화
+    options.add_argument('--disable-popup-blocking')  # 팝업 차단 비활성화
+    options.add_argument('--disable-prompt-on-repost')  # 재게시 시 프롬프트 비활성화
+    options.add_argument('--disable-renderer-backgrounding')  # 렌더러 백그라운드 비활성화
+    options.add_argument('--disable-sync')  # 동기화 비활성화
+    options.add_argument('--metrics-recording-only')  # 메트릭 기록 전용
+    options.add_argument('--mute-audio')  # 오디오 음소거
+    options.add_argument('--no-first-run')  # 첫 실행 아님
+    options.add_argument('--safebrowsing-disable-auto-update')  # 안전 브라우징 자동 업데이트 비활성화
+    options.add_argument('--disable-3d-apis')  # 3D API 비활성화
 
+    station_nm, num = args
     try:
-        remote_webdriver = 'remote_chromedriver1'
-        driver = webdriver.Remote(f'http://{remote_webdriver}:4444/wd/hub', options=options)
+        remote_webdriver = f'remote_chromedriver{num}'
+        driver = get_webdriver(remote_webdriver, options)
         #driver = webdriver.Chrome(options=options)
     except Exception as e:
         logging.error(f"Webdriver connection is fail.: {e}")
-        logging.error(driver.page_source)  # 페이지 소스 출력
         return
 
     url = "https://www.diningcode.com/list.dc?query="
