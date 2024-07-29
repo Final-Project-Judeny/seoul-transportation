@@ -8,7 +8,6 @@ with DAG(
     dag_id='s3_upload_check',
     start_date=datetime(2024, 7, 19),
     schedule_interval="0 11 * * 2",
-    schedule = None,
     catchup=False,
     default_args={
         "depends_on_past": False,
