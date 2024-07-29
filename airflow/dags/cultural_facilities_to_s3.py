@@ -106,12 +106,12 @@ with DAG(
         provide_context=True,
     )
     
-    trigger_check_dag_task = TriggerDagRunOperator(
-        task_id='trigger_check_dag_cultural_facilities',
-        trigger_dag_id='s3_upload_check',
-        execution_date='{{ ds }}',
-        conf={'task': 'empty_task_cultural_facilities'},
-        wait_for_completion=False
-    )
+    # trigger_check_dag_task = TriggerDagRunOperator(
+    #     task_id='trigger_check_dag_cultural_facilities',
+    #     trigger_dag_id='s3_upload_check',
+    #     execution_date='{{ ds }}',
+    #     conf={'task': 'empty_task_cultural_facilities'},
+    #     wait_for_completion=False
+    # )
 
 fetch_and_upload_cultural_facilities_task
