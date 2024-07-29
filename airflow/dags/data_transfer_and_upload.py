@@ -22,7 +22,8 @@ with DAG(
         job_name='Judeny-data-transform',  
         script_location='s3://team-okky-2-bucket/glue/assets/Judeny-data-transform.py',  
         iam_role_name='{{ var.value.glue_iam_role }}',  
-        region_name='ap-northeast-2', 
+        region_name='ap-northeast-2',
+        aws_conn_id='aws_conn_id',
     )
     
     wait_for_job = GlueJobSensor(
@@ -38,7 +39,7 @@ with DAG(
         script_location='s3://team-okky-2-bucket/glue/assets/Judeny-s3-to-redshift.py', 
         iam_role_name='{{ var.value.glue_iam_role }}',  
         region_name='ap-northeast-2', 
-
+        aws_conn_id='aws_conn_id',
     )
     
     trigger_data_transfer >> wait_for_job >> trigger_data_upload
