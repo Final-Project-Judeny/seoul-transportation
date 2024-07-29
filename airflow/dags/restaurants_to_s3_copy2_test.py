@@ -4,7 +4,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #from RestaurantInfoCrawler import *
 from RestaurantInfoCrawler_copy2 import * # remote Chrome Driver 사용 test
 from io import StringIO
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 import json
@@ -59,12 +59,16 @@ with DAG(
             stations = station_info[split: ]
         args = [(station, num) for station in stations]
 
+        result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
-            try:
-                result = list(executor.map(RestaurantInfoCrawler, args))
-            except Exception as e:
-                task_instance.log.error(f"Error occurred while crawling: {e}")
-                raise
+            futures = [executor.submit(RestaurantInfoCrawler, arg) for arg in args]
+            for future in as_completed(futures):
+                try:
+                    data = future.result()
+                    result.extend(data)
+                except Exception as e:
+                    task_instance.log.error(f"Error occurred while crawling: {e}")
+                    raise
         
         task_instance.xcom_push(key=f'data_{num}', value=result)
 
@@ -95,7 +99,23 @@ with DAG(
 
         # S3에 적재 (csv)
         try:
-            result_df = pd.DataFrame(result)
+            flattened_data = []
+            for item in result:
+                flat_item = {
+                    'timestamp': item['timestamp'],
+                    'station': item['station'],
+                    'name': item['name'],
+                    'score': item['score'],
+                    'category': ', '.join(item.get('category', [])),
+                    'hashtag': ', '.join(item.get('hashtag', [])),
+                    'image': item['image'],
+                    'loc_x': item['loc_x'],
+                    'loc_y': item['loc_y']
+                }
+                flattened_data.append(flat_item)
+
+            # DataFrame 생성 및 CSV 변환
+            result_df = pd.DataFrame(flattened_data)
             result_csv = result_df.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
             csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
