@@ -64,7 +64,7 @@ def RestaurantInfoCrawler(args):
     options.add_argument('--safebrowsing-disable-auto-update')  # 안전 브라우징 자동 업데이트 비활성화
     options.add_argument('--disable-3d-apis')  # 3D API 비활성화
 
-    station_nm, district, num = args
+    station_nm, line, district, num = args
     try:
         remote_webdriver = f'remote_chromedriver{num}'
         driver = get_webdriver(remote_webdriver, options)
@@ -75,7 +75,7 @@ def RestaurantInfoCrawler(args):
 
     url = "https://www.diningcode.com/list.dc?query="
     with driver:
-        driver.get(url+encoding(station_nm+"역"))
+        driver.get(url+encoding( f'{station_nm}역 {line}' ))
 
         # 로딩 대기
         try:
