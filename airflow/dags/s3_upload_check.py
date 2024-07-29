@@ -19,7 +19,6 @@ with DAG(
         external_dag_id='s3_upload_tourist_spots',
         external_task_id=None,  # DAG 전체 완료를 기다림
         allowed_states=['success'],
-        failed_states=['failed', 'skipped'],
         mode='poke',
         timeout=600,
     )
@@ -30,7 +29,6 @@ with DAG(
         external_dag_id='s3_upload_festivals',
         external_task_id=None,
         allowed_states=['success'],
-        failed_states=['failed', 'skipped'],
         mode='poke',
         timeout=600,
     )
@@ -41,7 +39,6 @@ with DAG(
         external_dag_id='s3_upload_cultural_facilities',
         external_task_id=None,
         allowed_states=['success'],
-        failed_states=['failed', 'skipped'],
         mode='poke',
         timeout=600,
     )
@@ -52,7 +49,6 @@ with DAG(
         external_dag_id='s3_upload_leisure_sports',
         external_task_id=None,
         allowed_states=['success'],
-        failed_states=['failed', 'skipped'],
         mode='poke',
         timeout=600,
     )
