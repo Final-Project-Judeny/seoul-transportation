@@ -7,6 +7,7 @@ from datetime import timedelta, datetime
 with DAG(
     dag_id='s3_upload_check',
     start_date=datetime(2024, 7, 19),
+    schedule_interval="0 11 * * 2",
     schedule = None,
     catchup=False,
     default_args={
@@ -18,7 +19,7 @@ with DAG(
     wait_for_dag_1 = ExternalTaskSensor(
         task_id='check_tourist_spots',
         external_dag_id='s3_upload_tourist_spots',
-        external_task_id=None,  # DAG 전체 완료를 기다림
+        external_task_id='fetch_and_upload_tourist_spots',  # DAG 전체 완료를 기다림
         allowed_states=['success'],
         mode='poke',
         timeout=600,
