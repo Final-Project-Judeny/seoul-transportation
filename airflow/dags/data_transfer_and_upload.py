@@ -7,7 +7,6 @@ from datetime import timedelta, datetime
 with DAG(
     dag_id = 'trigger_glue_jobs',
     start_date=datetime(2024, 7, 19),
-    schedule_interval=timedelta(days=1),
     catchup=False,
     default_args={
         "retries" : 1,
