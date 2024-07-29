@@ -30,6 +30,7 @@ with DAG(
         task_id = 'wait_for_job',
         job_name = 'Judeny-data-transform',
         run_id = trigger_data_transfer.output,
+        aws_conn_id='aws_default',
     )
     
     
