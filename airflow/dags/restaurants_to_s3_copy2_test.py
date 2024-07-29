@@ -39,13 +39,14 @@ with DAG(
             station_key = f"{base_key}basic_data/station_info_v2.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
-            station_info = station_info["역사명"].unique().tolist()
+            unique_station = station_info['역사명'].unique().tolist()
+            filtered_station_info = unique_station[unique_station['역사명'].isin(unique_station)][['역사명', '행정동']]
             task_instance.log.info("Successfully read csv file.")
         except Exception as e:
             task_instance.log.error(f"Error occurred while read csv file: {e}")
             raise
 
-        task_instance.xcom_push(key='station_info', value=station_info)
+        task_instance.xcom_push(key='station_info', value=filtered_station_info)
 
     def webCrawling(num, split, **kwargs):
         task_instance = kwargs['ti']
@@ -57,7 +58,7 @@ with DAG(
             stations = station_info[ :split]
         else:
             stations = station_info[split: ]
-        args = [(station, num) for station in stations]
+        args = [(station, district, num) for station, district in stations]
 
         result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
