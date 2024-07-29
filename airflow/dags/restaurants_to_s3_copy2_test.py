@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #from RestaurantInfoCrawler import *
-from RestaurantInfoCrawler_copy2 import * # remote Chrome Driver 사용 test
+from RestaurantInfoCrawler import *
 from io import StringIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
