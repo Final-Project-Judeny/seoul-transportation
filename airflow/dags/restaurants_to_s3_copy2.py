@@ -2,9 +2,9 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #from RestaurantInfoCrawler import *
-from RestaurantInfoCrawler_copy2 import * # remote Chrome Driver 사용 test
+from RestaurantInfoCrawler import *
 from io import StringIO
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 import json
@@ -20,7 +20,7 @@ default_args = {
 }
 
 with DAG(
-    's3_upload_restaurants_parallel2',
+    's3_upload_restaurants',
     default_args=default_args,
     description='Crawl restaurant data from the web',
     schedule_interval="0 11 * * 2",
@@ -39,11 +39,10 @@ with DAG(
             station_key = f"{base_key}basic_data/station_info_v2.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
-            unique_station = station_info['역사명'].unique().tolist()
-            filtered_station_info = unique_station[unique_station['역사명'].isin(unique_station)][['역사명', '행정동']]
+            filtered_station_info = station_info[['역사명', '호선', '행정동']]
             task_instance.log.info("Successfully read csv file.")
         except Exception as e:
-            task_instance.log.error(f"Error occurred while read csv file: {e}")
+            task_instance.log.error(f"Error occurred while read csv file: {e}") 
             raise
 
         task_instance.xcom_push(key='station_info', value=filtered_station_info)
@@ -57,14 +56,18 @@ with DAG(
             stations = station_info[ :split]
         else:
             stations = station_info[split: ]
-        args = [(station, district, num) for station, district in stations]
+        args = [(row['역사명'], row['호선'], row['행정동'], num) for _, row in stations.iterrows()]
 
+        result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
-            try:
-                result = list(executor.map(RestaurantInfoCrawler, args))
-            except Exception as e:
-                task_instance.log.error(f"Error occurred while crawling: {e}")
-                raise
+            futures = [executor.submit(RestaurantInfoCrawler, arg) for arg in args]
+            for future in as_completed(futures):
+                try:
+                    data = future.result()
+                    result.extend(data)
+                except Exception as e:
+                    task_instance.log.error(f"Error occurred while crawling: {e}")
+                    raise
         
         task_instance.xcom_push(key=f'data_{num}', value=result)
 
@@ -82,7 +85,12 @@ with DAG(
             result_json = json.dumps(result, ensure_ascii=False, indent=4)
             json_file_name = f"수도권_식당_정보_{execution_date}.json"
             json_key = f"{base_key}restaurants/{json_file_name}"
-            hook.load_string(string_data=result_json, key=json_key, bucket_name=bucket_name, replace=True)
+            hook.load_string(
+                string_data=result_json,
+                key=json_key,
+                bucket_name=bucket_name,
+                replace=True
+            )
             task_instance.log.info(f"Successfully uploaded json file to S3.")
         except Exception as e:
             task_instance.log.error(f"Error occurred while uploading json file to S3: {e}")
@@ -90,12 +98,32 @@ with DAG(
 
         # S3에 적재 (csv)
         try:
-            result_csv = pd.DataFrame(result)
-            csv_buffer = StringIO()
-            result_csv.to_csv(csv_buffer, index=False)
+            flattened_data = []
+            for item in result:
+                flat_item = {
+                    'timestamp': item['timestamp'],
+                    'station': item['station'],
+                    'name': item['name'],
+                    'score': item['score'],
+                    'category': ', '.join(item.get('category', [])),
+                    'hashtag': ', '.join(item.get('hashtag', [])),
+                    'image': item['image'],
+                    'loc_x': item['loc_x'],
+                    'loc_y': item['loc_y']
+                }
+                flattened_data.append(flat_item)
+
+            # DataFrame 생성 및 CSV 변환
+            result_df = pd.DataFrame(flattened_data)
+            result_csv = result_df.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
             csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
-            hook.load_string(string_data=csv_buffer.getvalue(), key=csv_key, bucket_name=bucket_name, replace=True)
+            hook.load_string(
+                string_data=result_csv,
+                key=csv_key,
+                bucket_name=bucket_name,
+                replace=True
+            )
             task_instance.log.info(f"Successfully uploaded csv file to S3.")
         except Exception as e:
             task_instance.log.error(f"Error occurred while uploading csv file to S3: {e}")
@@ -117,7 +145,7 @@ with DAG(
         python_callable=webCrawling,
         op_kwargs={
             'num': 1,
-            'split': 330,
+            'split': 390,
         },
     )
 
@@ -126,7 +154,7 @@ with DAG(
         python_callable=webCrawling,
         op_kwargs={
             'num': 2,
-            'split': 330,
+            'split': 390,
         },
     )
     
