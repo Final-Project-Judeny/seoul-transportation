@@ -303,7 +303,7 @@ services:
       - ../:${DESTINATION_PATH:-/app/sync}
       - ${GIT_SSH_KEY:-~/.ssh/id}:/root/.ssh/id
       # - ${GIT_SSH_KEY:-~/.ssh/}:/root/.ssh 컨테이너 /root/.ssh에 키 복사
-      
+
     environment:
       REPO_URL: ${REPO_URL:-git@github.com:Final-Project-Judeny/seoul-transportation.git}
       GIT_BRANCH: ${GIT_BRANCH:-main}
@@ -313,12 +313,31 @@ services:
       INTERVAL: ${INTERVAL:-60}
     restart: always
 
-  selenium:
-    container_name: remote_chromedriver
+  selenium1:
+    container_name: remote_chromedriver1
     image: selenium/standalone-chrome:latest
     ports:
       - 4444:4444
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     restart: always
+
+  selenium2:
+    container_name: remote_chromedriver2
+    image: selenium/standalone-chrome:latest
+    ports:
+      - 4445:4444
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    restart: always
+
+
 
 
 
