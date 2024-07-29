@@ -8,7 +8,7 @@ from airflow.utils.trigger_rule import TriggerRule
 # with DAG 구문을 사용하여 DAG 작성
 with DAG(
     dag_id='s3_upload_check',
-    start_date=datetime(2024, 7, 19),
+    start_date=datetime(2024, 7, 28),
     schedule = None,
     catchup=False,
     default_args={

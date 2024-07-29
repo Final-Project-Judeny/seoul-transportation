@@ -85,7 +85,7 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, execution_date, **k
 # DAG 정의
 with DAG(
     dag_id="s3_upload_tourist_spots",
-    start_date=datetime(2024, 7, 19),
+    start_date=datetime(2024, 7, 28),
     schedule_interval="0 11 * * 2",
     catchup=False,
     default_args={

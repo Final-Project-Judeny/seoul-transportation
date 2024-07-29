@@ -7,7 +7,7 @@ from airflow.utils.trigger_rule import TriggerRule
 
 with DAG(
     dag_id = 's3_upload_check_sensor',
-    start_date=datetime(2023, 7, 25),
+    start_date=datetime(2023, 7, 28),
     schedule_interval='55 10 * * 2',
     catchup=False
 ) as dag:

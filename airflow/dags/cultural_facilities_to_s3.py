@@ -85,7 +85,7 @@ def fetch_and_upload_cultural_facilities(bucket_name, object_name, execution_dat
 # DAG 정의
 with DAG(
     dag_id="s3_upload_cultural_facilities",
-    start_date=datetime(2024, 7, 19),
+    start_date=datetime(2024, 7, 28),
     schedule_interval="0 11 * * 2",
     catchup=False,
     default_args={
