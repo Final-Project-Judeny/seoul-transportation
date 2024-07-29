@@ -20,7 +20,7 @@ default_args = {
 }
 
 with DAG(
-    's3_upload_restaurants_parallel2',
+    's3_upload_restaurants_parallel2_test',
     default_args=default_args,
     description='Crawl restaurant data from the web',
     schedule_interval="0 11 * * 2",
