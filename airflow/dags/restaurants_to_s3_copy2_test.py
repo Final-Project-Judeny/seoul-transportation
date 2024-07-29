@@ -90,9 +90,8 @@ with DAG(
 
         # S3에 적재 (csv)
         try:
-            result_csv = pd.DataFrame(result)
-            csv_buffer = StringIO()
-            result_csv.to_csv(csv_buffer, index=False)
+            result_df = pd.DataFrame(result)
+            result_csv = result_df.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
             csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
             hook.load_string(string_data=csv_buffer.getvalue(), key=csv_key, bucket_name=bucket_name, replace=True)
