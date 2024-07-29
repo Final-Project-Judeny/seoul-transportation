@@ -106,12 +106,13 @@ with DAG(
         provide_context=True,
     )
     
-    trigger_check_dag_task = TriggerDagRunOperator(
-        task_id='trigger_check_dag_leisure_sports',
-        trigger_dag_id='s3_upload_check',
-        execution_date='{{ ds }}',
-        conf={'task': 'empty_task_leisure_sports'},
-        wait_for_completion=False
-    )
+    # trigger_check_dag_task = TriggerDagRunOperator(
+    #     task_id='trigger_check_dag_leisure_sports',
+    #     trigger_dag_id='s3_upload_check',
+    #     execution_date='{{ ds }}',
+    #     conf={'task': 'empty_task_leisure_sports'},
+    #     wait_for_completion=False
+    # )
 
-fetch_and_upload_leisure_sports_task >> trigger_check_dag_task
+fetch_and_upload_leisure_sports_task 
+# >> trigger_check_dag_task
