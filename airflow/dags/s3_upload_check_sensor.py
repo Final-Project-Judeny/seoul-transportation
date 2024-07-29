@@ -1,9 +1,9 @@
-# dag_E.py
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from datetime import datetime
 from airflow.utils.trigger_rule import TriggerRule
+from datetime import timedelta
 
 with DAG(
     dag_id = 's3_upload_check_sensor',
@@ -20,6 +20,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
+        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
     )
     
     sensor_B = ExternalTaskSensor(
@@ -30,6 +31,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
+        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
     )
     
     sensor_C = ExternalTaskSensor(
@@ -40,6 +42,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
+        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
     )
     
     sensor_D = ExternalTaskSensor(
@@ -50,6 +53,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
+        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
     )
     
     trigger_glue_jobs_dag = TriggerDagRunOperator(
