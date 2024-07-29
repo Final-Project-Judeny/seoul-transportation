@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #from RestaurantInfoCrawler import *
-from RestaurantInfoCrawler_copy2 import * # remote Chrome Driver 사용 test
+from RestaurantInfoCrawler import *
 from io import StringIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -39,11 +39,10 @@ with DAG(
             station_key = f"{base_key}basic_data/station_info_v2.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
-            unique_station = station_info['역사명'].unique().tolist()
-            filtered_station_info = unique_station[unique_station['역사명'].isin(unique_station)][['역사명', '행정동']]
+            filtered_station_info = station_info[['역사명', '호선', '행정동']]
             task_instance.log.info("Successfully read csv file.")
         except Exception as e:
-            task_instance.log.error(f"Error occurred while read csv file: {e}")
+            task_instance.log.error(f"Error occurred while read csv file: {e}") 
             raise
 
         task_instance.xcom_push(key='station_info', value=filtered_station_info)
@@ -51,14 +50,14 @@ with DAG(
     def webCrawling(num, split, **kwargs):
         task_instance = kwargs['ti']
         station_info = task_instance.xcom_pull(key='station_info', task_ids='read_station_info')
-        station_info = station_info[:30]
+        station_info = station_info[:30] ###################### test용
 
         # 모든 역에 대해 식당 정보 크롤
         if num == 1:
             stations = station_info[ :split]
         else:
             stations = station_info[split: ]
-        args = [(station, district, num) for station, district in stations]
+        args = [(row['역사명'], row['호선'], row['행정동'], num) for _, row in stations.iterrows()]
 
         result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -147,7 +146,7 @@ with DAG(
         python_callable=webCrawling,
         op_kwargs={
             'num': 1,
-            'split': 15,
+            'split': 15, ########## test용
         },
     )
 
@@ -156,7 +155,7 @@ with DAG(
         python_callable=webCrawling,
         op_kwargs={
             'num': 2,
-            'split': 15,
+            'split': 15, ########## test용
         },
     )
     
