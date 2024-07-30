@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
-from airflow.providers.amazon.aws.operators.redshift import RedshiftSQLOperator
+from airflow.providers.amazon.aws.operators.redshift_sql import RedshiftSQLOperator
+from airflow.providers.potgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
 
 default_args = {
@@ -20,6 +21,12 @@ with DAG(
     start_date=datetime(2024, 7, 1),
     catchup=False,
 ) as dag:
+    
+    def get_redshift_connection(autocommit=True):
+        hook = PostgresHook(postgres_conn_id='redshift_conn_id')
+        conn = hook.get_conn()
+        conn.autocommit = autocommit
+        return conn.cursor()
 
     create_table = RedshiftSQLOperator(
         task_id="create_table",
@@ -35,7 +42,8 @@ with DAG(
             image varchar(15) DEFAULT NULL,
             loc_x float DEFAULT NULL,
             loc_y float DEFAULT NULL,
-        );"""
+        );""",
+        redshift_conn_id='redshift_conn_id',
     )
 
     s3_to_redshift = S3ToRedshiftOperator(
@@ -47,7 +55,7 @@ with DAG(
         copy_options=['csv'],
         redshift_conn_id = "redshift_conn_id",
         aws_conn_id = "aws_conn_id",
-        method = "REPLACE"
+        method = "REPLACE",
     )
 
     create_table >> s3_to_redshift
