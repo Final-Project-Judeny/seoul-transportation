@@ -44,7 +44,7 @@ with DAG(
                 image varchar(15) DEFAULT NULL,
                 loc_x float DEFAULT NULL,
                 loc_y float DEFAULT NULL,
-            );""")
+            )""")
             task_instance.log.info(f'Table restaurants is created.')
         except Exception as e:
             task_instance.log.error(f'Initialize table fail: {e}')
