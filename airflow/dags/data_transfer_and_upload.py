@@ -28,7 +28,7 @@ with DAG(
     
     wait_for_job1 = GlueJobSensor(
         task_id = 'wait_for_job1',
-        job_name = 'Judeny-data-transform',
+        job_name = 'Judeny-data-transform-v2',
         run_id = trigger_data_transfer.output,
         aws_conn_id='aws_conn_id',
     )
