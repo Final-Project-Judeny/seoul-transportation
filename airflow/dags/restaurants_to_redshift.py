@@ -43,7 +43,7 @@ with DAG(
                 hashtag varchar(50) DEFAULT NULL,
                 image varchar(15) DEFAULT NULL,
                 loc_x float DEFAULT NULL,
-                loc_y float DEFAULT NULL,
+                loc_y float DEFAULT NULL
             )""")
             task_instance.log.info(f'Table restaurants is created.')
         except Exception as e:
