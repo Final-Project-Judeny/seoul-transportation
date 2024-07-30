@@ -37,11 +37,11 @@ with DAG(
                 timestamp datetime NOT NULL,
                 station varchar(50) NOT NULL,
                 district varchar(50) NOT NULL,
-                name varchar(50) NOT NULL,
-                score varchar(50) DEFAULT NULL,
+                name varchar(100) NOT NULL,
+                score varchar(10) DEFAULT NULL,
                 category varchar(50) DEFAULT NULL,
                 hashtag varchar(50) DEFAULT NULL,
-                image varchar(15) DEFAULT NULL,
+                image varchar(255) DEFAULT NULL,
                 loc_x float DEFAULT NULL,
                 loc_y float DEFAULT NULL
             )""")
