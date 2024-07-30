@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
-from airflow.providers.amazon.aws.operators.redshift_sql import RedshiftSQLOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.potgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
 
@@ -16,7 +16,7 @@ default_args = {
 with DAG(
     'redshift_upload_restaurants',
     default_args=default_args,
-    description='upload_reataurants_from_s3_to_redshift',
+    description='upload_reataurants_from_s3_to_reds햐hift',
     schedule_interval="0 11 * * 3",
     start_date=datetime(2024, 7, 1),
     catchup=False,
@@ -27,23 +27,32 @@ with DAG(
         conn = hook.get_conn()
         conn.autocommit = autocommit
         return conn.cursor()
-
-    create_table = RedshiftSQLOperator(
-        task_id="create_table",
-        sql="""
-        CREATE TABLE IF NOT EXISTS restaurants (
-            timestamp datetime NOT NULL,
-            station varchar(50) NOT NULL,
-            district varchar(50) NOT NULL,
-            name varchar(50) NOT NULL,
-            score varchar(50) DEFAULT NULL,
-            category varchar(50) DEFAULT NULL,
-            hashtag varchar(50) DEFAULT NULL,
-            image varchar(15) DEFAULT NULL,
-            loc_x float DEFAULT NULL,
-            loc_y float DEFAULT NULL,
-        );""",
-        redshift_conn_id='redshift_conn_id',
+    
+    def create_table(**kwargs):
+        task_instance = kwargs['ti']
+        cur = get_redshift_connection()
+        try:
+            cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS dev.public.restaurants (
+                timestamp datetime NOT NULL,
+                station varchar(50) NOT NULL,
+                district varchar(50) NOT NULL,
+                name varchar(50) NOT NULL,
+                score varchar(50) DEFAULT NULL,
+                category varchar(50) DEFAULT NULL,
+                hashtag varchar(50) DEFAULT NULL,
+                image varchar(15) DEFAULT NULL,
+                loc_x float DEFAULT NULL,
+                loc_y float DEFAULT NULL,
+            );""")
+            task_instance.log.info(f'Table restaurants is created.')
+        except Exception as e:
+            task_instance.log.error(f'Initialize table fail: {e}')
+            raise
+    
+    create_table = PythonOperator(
+        task_id="create_table_test",
+        python_callable=create_table,
     )
 
     s3_to_redshift = S3ToRedshiftOperator(
