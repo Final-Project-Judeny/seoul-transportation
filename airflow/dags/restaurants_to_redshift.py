@@ -34,7 +34,7 @@ with DAG(
         try:
             cur.execute(f"""
             CREATE TABLE IF NOT EXISTS public.restaurants (
-                timestamp datetime NOT NULL,
+                timestamp varchar(50) NOT NULL,
                 station varchar(50) NOT NULL,
                 district varchar(50) DEFAULT NULL,
                 name varchar(100) NOT NULL,
