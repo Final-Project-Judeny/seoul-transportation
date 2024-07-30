@@ -61,7 +61,7 @@ with DAG(
         s3_key = "tour/restaurants/restaurants/restaurants.csv",
         schema = "public",
         table = "restaurants",
-        copy_options=['csv'],
+        copy_options=['csv', 'IGNOREHEADER 1', 'DATEFORMAT AS \'auto\''],
         redshift_conn_id = "redshift_conn_id",
         aws_conn_id = "aws_conn_id",
         method = "REPLACE",
