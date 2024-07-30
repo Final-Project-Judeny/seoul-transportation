@@ -104,6 +104,7 @@ with DAG(
                 flat_item = {
                     'timestamp': item['timestamp'],
                     'station': item['station'],
+                    'district': item['district'],
                     'name': item['name'],
                     'score': item['score'],
                     'category': ', '.join(item.get('category', [])),
