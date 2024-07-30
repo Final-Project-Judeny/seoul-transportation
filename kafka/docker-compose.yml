@@ -245,6 +245,8 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - kafka-net
     deploy:
@@ -264,7 +266,7 @@ services:
     environment:
       MONGODB_HOST: mongodb
       MONGODB_PORT: 27017  
-      SCHEMA_REFRESH: 10
+      SCHEMA_REFRESH: 7
     networks:
       - kafka-net
     deploy:
@@ -299,7 +301,7 @@ services:
         condition: any
 
   kafka-streams-app:
-    image: wsh120/docker_streams:latest
+    image: wsh120/kafka-steams-app:latest
     container_name: kafka-streams-app
 
     environment:
@@ -317,9 +319,11 @@ services:
       restart_policy:
         condition: any
 
+
 volumes:
   pg_data: {}
   conduktor_data: {}
+  mongodb_data: {}
 
 networks:
   kafka-net:
