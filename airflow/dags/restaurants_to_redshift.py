@@ -13,7 +13,7 @@ default_args = {
 }
 
 with DAG(
-    'upload_to_redshift',
+    'redshift_upload_restaurants',
     default_args=default_args,
     description='upload_reataurants_from_s3_to_redshift',
     schedule_interval="0 11 * * 3",
