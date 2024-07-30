@@ -33,7 +33,7 @@ with DAG(
         cur = get_redshift_connection()
         try:
             cur.execute(f"""
-            CREATE TABLE IF NOT EXISTS dev.public.restaurants (
+            CREATE TABLE IF NOT EXISTS public.restaurants (
                 timestamp datetime NOT NULL,
                 station varchar(50) NOT NULL,
                 district varchar(50) NOT NULL,
@@ -59,7 +59,7 @@ with DAG(
         task_id = "s3_to_redshift",
         s3_bucket = '{{ var.value.s3_bucket_name }}',
         s3_key = "tour/restaurants/restaurants/",
-        schema = "dev.public.",
+        schema = "public",
         table = "restaurants",
         copy_options=['csv'],
         redshift_conn_id = "redshift_conn_id",
