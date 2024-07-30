@@ -43,7 +43,7 @@ with DAG(
     s3_to_redshift = S3ToRedshiftOperator(
         task_id = "s3_to_redshift",
         s3_bucket = '{{ var.value.s3_bucket_name }}',
-        s3_key = "toru/restaurants/restaurants/",
+        s3_key = "tour/restaurants/restaurants/",
         schema = "dev/public/",
         table = "restaurants",
         copy_options=['csv'],
