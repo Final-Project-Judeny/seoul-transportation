@@ -51,7 +51,7 @@ with DAG(
             raise
     
     create_table = PythonOperator(
-        task_id="create_table_test",
+        task_id="create_table",
         python_callable=create_table,
     )
 
@@ -59,7 +59,7 @@ with DAG(
         task_id = "s3_to_redshift",
         s3_bucket = '{{ var.value.s3_bucket_name }}',
         s3_key = "tour/restaurants/restaurants/",
-        schema = "dev/public/",
+        schema = "dev.public.",
         table = "restaurants",
         copy_options=['csv'],
         redshift_conn_id = "redshift_conn_id",
