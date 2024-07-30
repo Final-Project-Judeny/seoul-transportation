@@ -36,7 +36,7 @@ with DAG(
             CREATE TABLE IF NOT EXISTS public.restaurants (
                 timestamp datetime NOT NULL,
                 station varchar(50) NOT NULL,
-                district varchar(50) NOT NULL,
+                district varchar(50) DEFAULT NULL,
                 name varchar(100) NOT NULL,
                 score varchar(10) DEFAULT NULL,
                 category varchar(100) DEFAULT NULL,
