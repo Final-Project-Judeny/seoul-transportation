@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
-from airflow.providers.amazon.aws.operators.redshift_sql import RedshiftSQLOperator
+from airflow.providers.amazon.aws.operators.redshift import RedshiftSQLOperator
 from datetime import datetime, timedelta
 
 default_args = {
@@ -20,24 +20,22 @@ with DAG(
     start_date=datetime(2024, 7, 1),
     catchup=False,
 ) as dag:
-    
-    sql_create_table = """
-    CREATE TABLE IF NOT EXISTS restaurants (
-        timestamp datetime NOT NULL,
-        station varchar(50) NOT NULL,
-        district varchar(50) NOT NULL,
-        name varchar(50) NOT NULL,
-        score varchar(50) DEFAULT NULL,
-        category varchar(50) DEFAULT NULL,
-        hashtag varchar(50) DEFAULT NULL,
-        image varchar(15) DEFAULT NULL,
-        loc_x float DEFAULT NULL,
-        loc_y float DEFAULT NULL,
-    );"""
 
     create_table = RedshiftSQLOperator(
         task_id="create_table",
-        sql=sql_create_table
+        sql="""
+        CREATE TABLE IF NOT EXISTS restaurants (
+            timestamp datetime NOT NULL,
+            station varchar(50) NOT NULL,
+            district varchar(50) NOT NULL,
+            name varchar(50) NOT NULL,
+            score varchar(50) DEFAULT NULL,
+            category varchar(50) DEFAULT NULL,
+            hashtag varchar(50) DEFAULT NULL,
+            image varchar(15) DEFAULT NULL,
+            loc_x float DEFAULT NULL,
+            loc_y float DEFAULT NULL,
+        );"""
     )
 
     s3_to_redshift = S3ToRedshiftOperator(
