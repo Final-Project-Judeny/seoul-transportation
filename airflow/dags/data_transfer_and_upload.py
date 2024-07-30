@@ -19,7 +19,7 @@ with DAG(
     # AWS Glue Job 실행
     trigger_data_transfer = GlueJobOperator(
         task_id='trigger_data_transfer',
-        job_name='Judeny-data-transform',  
+        job_name='Judeny-data-transform-v2',  
         script_location='s3://team-okky-2-bucket/glue/assets/Judeny-data-transform.py',  
         iam_role_name='{{ var.value.glue_iam_role }}',  
         region_name='ap-northeast-2',
