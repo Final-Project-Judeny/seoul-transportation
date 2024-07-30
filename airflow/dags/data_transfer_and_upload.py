@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 # with DAG 구문을 사용하여 DAG 작성
 with DAG(
     dag_id = 'trigger_glue_jobs',
-    start_date=datetime(2024, 7, 28),
+    start_date=datetime(2024, 7, 23),
     schedule = None,
     catchup=False,
     default_args={
