@@ -26,8 +26,8 @@ with DAG(
         aws_conn_id='aws_conn_id',
     )
     
-    wait_for_job = GlueJobSensor(
-        task_id = 'wait_for_job',
+    wait_for_job1 = GlueJobSensor(
+        task_id = 'wait_for_job1',
         job_name = 'Judeny-data-transform',
         run_id = trigger_data_transfer.output,
         aws_conn_id='aws_conn_id',
@@ -43,4 +43,20 @@ with DAG(
         aws_conn_id='aws_conn_id',
     )
     
-    trigger_data_transfer >> wait_for_job >> trigger_data_upload
+    wait_for_job2 = GlueJobSensor(
+        task_id = 'wait_for_job2',
+        job_name = 'Judeny-s3-to-redshift',
+        run_id = trigger_data_upload.output,
+        aws_conn_id='aws_conn_id',
+    )
+    
+    trigger_data_analysis = GlueJobOperator(
+        task_id='trigger_data_analysis',
+        job_name='Judeny-data-analysis',  
+        script_location='s3://team-okky-2-bucket/glue/assets/Judeny-data-analysis.py', 
+        iam_role_name='{{ var.value.glue_iam_role }}',  
+        region_name='ap-northeast-2', 
+        aws_conn_id='aws_conn_id',
+    )
+    
+    trigger_data_transfer >> wait_for_job1 >> trigger_data_upload >> wait_for_job2 >> trigger_data_analysis
