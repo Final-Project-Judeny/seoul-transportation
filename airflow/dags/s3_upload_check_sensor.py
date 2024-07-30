@@ -8,7 +8,7 @@ from datetime import timedelta
 with DAG(
     dag_id = 's3_upload_check_sensor',
     start_date=datetime(2024, 7, 28),
-    schedule_interval='25 11 * * 2',
+    schedule_interval='55 2 * * 2',
     catchup=False
 ) as dag:
     
