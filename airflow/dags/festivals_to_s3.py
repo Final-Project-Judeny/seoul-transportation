@@ -148,7 +148,7 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
 with DAG(
     dag_id="s3_upload_festivals",
     start_date=datetime(2024, 7, 23),
-    schedule_interval='0 2 * * 3',
+    schedule_interval='15 2 * * 3',
     catchup=False,
     default_args={
         "retires" : 1,
@@ -177,14 +177,6 @@ with DAG(
         },
         provide_context=True,
     )
-    
-    # trigger_check_dag_task = TriggerDagRunOperator(
-    #     task_id='trigger_check_dag_festivals',
-    #     trigger_dag_id='s3_upload_check',
-    #     execution_date='{{ ds }}',
-    #     conf={'task': 'empty_task_festivals'},
-    #     wait_for_completion=False
-    # )
+
 
 fetch_and_upload_festivals_task >> fetch_and_upload_festivals_specifics_task 
-# >> trigger_check_dag_task
