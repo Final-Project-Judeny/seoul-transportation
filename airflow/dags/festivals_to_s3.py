@@ -27,6 +27,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     all_results = []
     
     kst = pytz.timezone('Asia/Seoul')
+    current_time = datetime.now(kst).strftime('%Y-%m-%d')
     
     for index, row in existing_df.iterrows():
         params = {
@@ -63,7 +64,7 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path_json = "tour/festivals/수도권_축제행사_정보_" + execution_date + ".json"
+    s3_path_json = f"tour/festivals/수도권_축제행사_정보_{current_time}.json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
@@ -73,15 +74,15 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
         replace=True
     )
     
-    df = pd.DataFrame(all_results)
-    csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/festivals/festivals/festivals.csv"
-    s3_hook.load_string(
-        string_data=csv_data,
-        key=s3_path_csv,
-        bucket_name=bucket_name,
-        replace=True
-    )
+    # df = pd.DataFrame(all_results)
+    # csv_data = df.to_csv(index=False)
+    # s3_path_csv = "tour/festivals/festivals/festivals.csv"
+    # s3_hook.load_string(
+    #     string_data=csv_data,
+    #     key=s3_path_csv,
+    #     bucket_name=bucket_name,
+    #     replace=True
+    # )
     
     
     
@@ -103,6 +104,9 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
     response = requests.get(url, params=params)
     data_json = None
     
+    kst = pytz.timezone('Asia/Seoul')
+    current_time = datetime.now(kst).strftime('%Y-%m-%d')
+    
     if response.status_code == 200:
         try:
             data = response.json()  # JSON 응답 데이터 파싱
@@ -110,7 +114,7 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
                 items = data['response']['body']['items']['item']
                 data_json = json.dumps(items, ensure_ascii=False, indent=4)
                 
-                s3_path_json = f"tour/festivals_info/수도권_축제행사_정보(상세)_" +  execution_date  +".json"                
+                s3_path_json = f"tour/festivals_info/수도권_축제행사_정보(상세)_{current_time}.json"                
                 s3_hook = S3Hook(aws_conn_id='aws_conn_id')
                 s3_hook.load_string(
                     string_data=data_json,
@@ -119,15 +123,15 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
                     replace=True
                 )
                 
-                df = pd.DataFrame(items)
-                csv_data = df.to_csv(index=False)
-                s3_path_csv = "tour/festivals_info/festivals_info/festival_specifics.csv"
-                s3_hook.load_string(
-                    string_data=csv_data,
-                    key=s3_path_csv,
-                    bucket_name=bucket_name,
-                    replace=True
-                )              
+                # df = pd.DataFrame(items)
+                # csv_data = df.to_csv(index=False)
+                # s3_path_csv = "tour/festivals_info/festivals_info/festival_specifics.csv"
+                # s3_hook.load_string(
+                #     string_data=csv_data,
+                #     key=s3_path_csv,
+                #     bucket_name=bucket_name,
+                #     replace=True
+                # )              
                 
             else:
                 print("Response JSON format is unexpected.")
@@ -148,7 +152,7 @@ def fetch_and_upload_festivals_specifics(bucket_name, execution_date, **kwargs):
 with DAG(
     dag_id="s3_upload_festivals",
     start_date=datetime(2024, 7, 23),
-    schedule_interval='15 2 * * 3',
+    schedule_interval='45 2 * * 3',
     catchup=False,
     default_args={
         "retires" : 1,

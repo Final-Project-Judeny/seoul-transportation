@@ -26,6 +26,7 @@ def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **
     all_results = []
     
     kst = pytz.timezone('Asia/Seoul')
+    current_time = datetime.now(kst).strftime('%Y-%m-%d')
     
     for index, row in existing_df.iterrows():
         params = {
@@ -62,7 +63,7 @@ def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **
     json_data = json.dumps(all_results, ensure_ascii=False, indent=4)
     
     # S3에 업로드
-    s3_path_json = "tour/leisure_sports/수도권_레포츠_정보_" + execution_date + ".json"
+    s3_path_json = f"tour/leisure_sports/수도권_레포츠_정보_{current_time}.json"
     
     s3_hook = S3Hook(aws_conn_id='aws_conn_id')
     s3_hook.load_string(
@@ -72,21 +73,21 @@ def fetch_and_upload_leisure_sports(bucket_name, object_name, execution_date, **
         replace=True
     )
     
-    df = pd.DataFrame(all_results)
-    csv_data = df.to_csv(index=False)
-    s3_path_csv = "tour/leisure_sports/leisure_sports/leisure_sports.csv"
-    s3_hook.load_string(
-        string_data=csv_data,
-        key=s3_path_csv,
-        bucket_name=bucket_name,
-        replace=True
-    )
+    # df = pd.DataFrame(all_results)
+    # csv_data = df.to_csv(index=False)
+    # s3_path_csv = "tour/leisure_sports/leisure_sports/leisure_sports.csv"
+    # s3_hook.load_string(
+    #     string_data=csv_data,
+    #     key=s3_path_csv,
+    #     bucket_name=bucket_name,
+    #     replace=True
+    # )
 
 # DAG 정의
 with DAG(
     dag_id="s3_upload_leisure_sports",
     start_date=datetime(2024, 7, 23),
-    schedule_interval='15 2 * * 3',
+    schedule_interval='45 2 * * 3',
     catchup=False,
     default_args={
         "retires" : 1,
