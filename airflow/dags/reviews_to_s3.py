@@ -63,7 +63,7 @@ with DAG(
         task_instance.xcom_push(key='reviews', value=reviews)
 
 
-    def uploadToS3(base_key, bucket_name, execution_date, **kwargs):
+    def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
         reviews = task_instance.xcom_pull(key='reviews', task_ids='createReviews') or []
 
@@ -73,7 +73,7 @@ with DAG(
         # S3에 적재 (json)
         try:
             result_json = json.dumps(reviews, ensure_ascii=False, indent=4)
-            json_file_name = f"관광지_리뷰_{execution_date}.json"
+            json_file_name = f"관광지_리뷰_{data_interval_start}.json"
             json_key = f"{base_key}/reviews/{json_file_name}"
             hook.load_string(
                 string_data=result_json,
@@ -139,7 +139,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "execution_date": "{{ ds }}",
+            "data_interval_start": "{{ ds }}",
         }
     )
 
