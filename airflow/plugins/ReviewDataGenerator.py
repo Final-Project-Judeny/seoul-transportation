@@ -2,6 +2,7 @@ import pandas as pd
 import random as r
 from datetime import datetime
 from scipy.stats import skewnorm
+import logging
 
 # curtural_facilities.csv, festivals.csv, leisure_sports.csv, tourist_spots.csv
 # 4개 파일의 contentsid를 받아 랜덤 리뷰 데이터를 생성해 반환하는 함수
@@ -43,4 +44,5 @@ def ReviewDataGenerator(all_tour_id):
         review_df = pd.concat([ review_df, review ])
     
     review_df = review_df.sort_values(by=['Timestamp'], axis=0).reset_index(drop=True)
+    logging.info(f"Review data was successfully created: {review_df[:10]}")
     return review_df
