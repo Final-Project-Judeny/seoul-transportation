@@ -49,10 +49,10 @@ with DAG(
 
     def createReviews(**kwargs):
         task_instance = kwargs['ti']
-        cf = task_instance.xcom_pull(key='tour_info', task_ids='read_cf_info', default_value=[]) # cultural_facilities
-        fs = task_instance.xcom_pull(key='tour_info', task_ids='read_fs_info', default_value=[]) # festivals
-        ls = task_instance.xcom_pull(key='tour_info', task_ids='read_ls_info', default_value=[]) # leisure_sports
-        ts = task_instance.xcom_pull(key='tour_info', task_ids='read_ts_info', default_value=[]) # tourist_spots
+        cf = task_instance.xcom_pull(key='tour_info', task_ids='read_cf_info') or [] # cultural_facilities
+        fs = task_instance.xcom_pull(key='tour_info', task_ids='read_fs_info') or [] # festivals
+        ls = task_instance.xcom_pull(key='tour_info', task_ids='read_ls_info') or [] # leisure_sports
+        ts = task_instance.xcom_pull(key='tour_info', task_ids='read_ts_info') or [] # tourist_spots
         
         all_tour_id = cf+fs+ls+ts
         try:
