@@ -65,7 +65,7 @@ with DAG(
 
     def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
-        reviews = task_instance.xcom_pull(key='reviews', task_ids='createReviews') or []
+        reviews = task_instance.xcom_pull(key='reviews', task_ids='create_review_data') or []
 
         # S3 연결
         hook = S3Hook('aws_conn_id')
