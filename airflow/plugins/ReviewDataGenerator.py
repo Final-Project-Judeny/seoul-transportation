@@ -26,6 +26,7 @@ def ReviewDataGenerator(all_tour_id):
         timestamp = datetime(year, month, day, hour, minute, second)
         
         # Score
+        a, loc, scale = 2, 50, 12
         score = int(skewnorm(a, loc, scale).rvs(1)[0])
         if score > 100:
             score = 100
