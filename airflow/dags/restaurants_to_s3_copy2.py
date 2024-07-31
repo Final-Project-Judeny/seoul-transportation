@@ -74,10 +74,10 @@ with DAG(
 
     def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
-        data_A1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A1', default_value=[])
-        data_A2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A2', default_value=[])
-        data_B1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B1', default_value=[])
-        data_B2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B2', default_value=[])
+        data_A1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A1') or []
+        data_A2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A2') or []
+        data_B1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B1') or []
+        data_B2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B2') or []
 
         # S3 연결
         hook = S3Hook('aws_conn_id')
