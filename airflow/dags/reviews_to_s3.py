@@ -49,16 +49,17 @@ with DAG(
 
     def createReviews(**kwargs):
         task_instance = kwargs['ti']
-        cf = task_instance.xcom_pull(key='tour_info', task_ids='read_cf_info') or [] # cultural_facilities
-        fs = task_instance.xcom_pull(key='tour_info', task_ids='read_fs_info') or [] # festivals
-        ls = task_instance.xcom_pull(key='tour_info', task_ids='read_ls_info') or [] # leisure_sports
-        ts = task_instance.xcom_pull(key='tour_info', task_ids='read_ts_info') or [] # tourist_spots
+        cf = task_instance.xcom_pull(key='tour_info', task_ids='read_cf_info', default_value=[]) # cultural_facilities
+        fs = task_instance.xcom_pull(key='tour_info', task_ids='read_fs_info', default_value=[]) # festivals
+        ls = task_instance.xcom_pull(key='tour_info', task_ids='read_ls_info', default_value=[]) # leisure_sports
+        ts = task_instance.xcom_pull(key='tour_info', task_ids='read_ts_info', default_value=[]) # tourist_spots
         
         all_tour_id = cf+fs+ls+ts
         try:
             reviews = ReviewDataGenerator(all_tour_id)
         except Exception as e:
             task_instance.log.error(f'Error occurred while creating review data: {e}')
+            raise
         
         task_instance.xcom_push(key='reviews', value=reviews)
 
@@ -72,7 +73,7 @@ with DAG(
 
         # S3에 적재 (json)
         try:
-            result_json = json.dumps(reviews, ensure_ascii=False, indent=4)
+            result_json = reviews.to_json(orient='records', force_ascii=False, indent=4)
             json_file_name = f"관광지_리뷰_{data_interval_start}.json"
             json_key = f"{base_key}/reviews/{json_file_name}"
             hook.load_string(
@@ -128,12 +129,12 @@ with DAG(
         },
     )
 
-    createReviews = PythonOperator(
+    create_review_data = PythonOperator(
         task_id='create_review_data',
         python_callable=createReviews,
     )
 
-    uploadToS3 = PythonOperator(
+    upload_to_s3 = PythonOperator(
         task_id='upload_to_s3',
         python_callable=uploadToS3,
         op_kwargs={
@@ -144,4 +145,4 @@ with DAG(
     )
 
     # 작업 순서 정의
-    [readCF, readFS, readLS, readTS] >> createReviews >> uploadToS3
+    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3
