@@ -18,7 +18,7 @@ def encoding(input):
     return urllib.parse.quote(input, encoding='utf-8')
 
 # web driver에 연결(실패시 재시도)하는 함수
-def get_webdriver(remote_webdriver, options, retries=3, delay=5):
+def get_webdriver(remote_webdriver, options, retries=10, delay=3):
     driver = None
     for attempt in range(retries):
         try:
@@ -64,7 +64,7 @@ def RestaurantInfoCrawler(args):
     options.add_argument('--safebrowsing-disable-auto-update')  # 안전 브라우징 자동 업데이트 비활성화
     options.add_argument('--disable-3d-apis')  # 3D API 비활성화
 
-    station_nm, line, district, num = args
+    station_nm, line, num = args
     try:
         remote_webdriver = f'remote_chromedriver{num}'
         driver = get_webdriver(remote_webdriver, options)
@@ -141,7 +141,6 @@ def RestaurantInfoCrawler(args):
                 restaurants.append({
                     'timestamp': crawl_timestamp,
                     'station': station_nm,
-                    'district': district,
                     'name': name,
                     'score': score,
                     'category': category,
@@ -171,5 +170,5 @@ def RestaurantInfoCrawler(args):
 
 
 if __name__ == "__main__":
-    test = RestaurantInfoCrawler('강남')
+    test = RestaurantInfoCrawler(('강남', '2호선', 1))
     print(test)

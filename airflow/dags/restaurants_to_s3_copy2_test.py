@@ -36,10 +36,10 @@ with DAG(
 
         # station 정보 로드
         try:
-            station_key = f"{base_key}basic_data/station_info_v2.csv"
+            station_key = f"{base_key}basic_data/station/subway_info_with_coordinates.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
-            filtered_station_info = station_info[['역사명', '호선', '행정동']]
+            filtered_station_info = station_info[['역사명', '호선']]
             task_instance.log.info("Successfully read csv file.")
         except Exception as e:
             task_instance.log.error(f"Error occurred while read csv file: {e}") 
@@ -57,7 +57,7 @@ with DAG(
             stations = station_info[ :split]
         else:
             stations = station_info[split: ]
-        args = [(row['역사명'], row['호선'], row['행정동'], num) for _, row in stations.iterrows()]
+        args = [(row['역사명'], row['호선'], num) for _, row in stations.iterrows()]
 
         result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
