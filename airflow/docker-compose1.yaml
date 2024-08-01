@@ -317,7 +317,7 @@ services:
     container_name: remote_chromedriver1
     image: selenium/standalone-chrome:latest
     ports:
-      - 4444:4444
+      - 4445:4444
     deploy:
       resources:
         limits:
@@ -329,7 +329,7 @@ services:
     container_name: remote_chromedriver2
     image: selenium/standalone-chrome:latest
     ports:
-      - 4445:4444
+      - 4446:4444
     deploy:
       resources:
         limits:
