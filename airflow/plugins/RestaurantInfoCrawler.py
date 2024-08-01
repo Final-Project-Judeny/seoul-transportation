@@ -18,7 +18,7 @@ def encoding(input):
     return urllib.parse.quote(input, encoding='utf-8')
 
 # web driver에 연결(실패시 재시도)하는 함수
-def get_webdriver(remote_webdriver, options, retries=3, delay=5):
+def get_webdriver(remote_webdriver, options, retries=10, delay=3):
     driver = None
     for attempt in range(retries):
         try:
