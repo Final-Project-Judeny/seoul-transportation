@@ -252,7 +252,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.zookeeper == true
+          - node.labels.mongo == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -272,7 +272,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.zookeeper == true
+          - node.labels.mongo == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -301,7 +301,7 @@ services:
         condition: any
 
   kafka-streams-app:
-    image: wsh120/kafka-steams-app:latest
+    image: wsh120/kafka-streams-app 
     container_name: kafka-streams-app
 
     environment:
@@ -318,6 +318,9 @@ services:
         parallelism: 1
       restart_policy:
         condition: any
+
+
+
 
 
 volumes:
