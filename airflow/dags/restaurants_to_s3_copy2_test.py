@@ -36,7 +36,7 @@ with DAG(
 
         # station 정보 로드
         try:
-            station_key = f"{base_key}basic_data/station_info_v2.csv"
+            station_key = f"{base_key}basic_data/station/subway_info_with_coordinates.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
             filtered_station_info = station_info[['역사명', '호선']]
