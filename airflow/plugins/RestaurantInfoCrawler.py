@@ -64,7 +64,7 @@ def RestaurantInfoCrawler(args):
     options.add_argument('--safebrowsing-disable-auto-update')  # 안전 브라우징 자동 업데이트 비활성화
     options.add_argument('--disable-3d-apis')  # 3D API 비활성화
 
-    station_nm, line, district, num = args
+    station_nm, line, num = args
     try:
         remote_webdriver = f'remote_chromedriver{num}'
         driver = get_webdriver(remote_webdriver, options)
@@ -141,7 +141,6 @@ def RestaurantInfoCrawler(args):
                 restaurants.append({
                     'timestamp': crawl_timestamp,
                     'station': station_nm,
-                    'district': district,
                     'name': name,
                     'score': score,
                     'category': category,
@@ -171,5 +170,5 @@ def RestaurantInfoCrawler(args):
 
 
 if __name__ == "__main__":
-    test = RestaurantInfoCrawler('강남')
+    test = RestaurantInfoCrawler(('강남', '2호선', 1))
     print(test)
