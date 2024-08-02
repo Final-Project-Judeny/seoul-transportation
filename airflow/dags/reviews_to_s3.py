@@ -49,6 +49,7 @@ with DAG(
             raise
 
         task_instance.xcom_push(key=f'{category}_data', value=filtered_tour_data)
+        task_instance.log.info(f"pushed data: \n{filtered_tour_data}")
 
     def createReviews(**kwargs):
         task_instance = kwargs['ti']
