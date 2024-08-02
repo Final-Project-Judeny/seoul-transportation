@@ -41,13 +41,10 @@ with DAG(
         today_data = today_obj.get()['Body'].read().decode('utf-8')
         today_df = pd.read_json(StringIO(today_data))
 
-        try:
-            aggr_key = "tour/reviews/reviews/reviews.csv"
-            aggr_data = s3_hook.read_key(key=aggr_key, bucket_name=bucket_name)
-            aggr_df = pd.read_csv(StringIO(aggr_data))
-            df = pd.concat([aggr_df, today_df], ignore_index=True)
-        except:
-            df = today_df
+        aggr_key = "tour/reviews/reviews/reviews.csv"
+        aggr_data = s3_hook.read_key(key=aggr_key, bucket_name=bucket_name)
+        aggr_df = pd.read_csv(StringIO(aggr_data))
+        df = pd.concat([aggr_df, today_df], ignore_index=True)
 
         task_instance.xcom_push(key='combined_df', value=df)
     
