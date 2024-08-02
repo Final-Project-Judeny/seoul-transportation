@@ -9,7 +9,6 @@ import pandas as pd
 import json
 from datetime import datetime, timedelta
 import random as r
-from scipy.stats import skewnorm
 
 default_args = {
     'owner': 'airflow',
@@ -25,7 +24,7 @@ with DAG(
     default_args=default_args,
     description='Create random review data and upload to S3',
     schedule_interval="0 11 * * *",
-    start_date=datetime(2024, 8, 1),
+    start_date=datetime(2024, 7, 31),
     catchup=True,
 ) as dag:
 
@@ -40,24 +39,28 @@ with DAG(
             key = f"{base_key}/{file}/{file}/{file}.csv"
             tour_content = hook.read_key(key=key, bucket_name=bucket_name)
             tour_info = pd.read_csv(StringIO(tour_content))
-            filtered_tour_info = tour_info['contentid'].unique().tolist()
+            tour_info = tour_info.drop_duplicates(subset=['contentid'])
+            tour_info['category'] = category
+            filtered_tour_data = tour_info[['contentid', 'title', 'category']].to_dict(orient='records')
+
             task_instance.log.info("Successfully read csv file.")
         except Exception as e:
-            task_instance.log.error(f"Error occurred while read csv file: {e}") 
+            task_instance.log.error(f"Error occurred while reading csv file: {e}") 
             raise
 
-        task_instance.xcom_push(key='tour_info', value=filtered_tour_info)
+        task_instance.xcom_push(key=f'{category}_data', value=filtered_tour_data)
 
     def createReviews(**kwargs):
         task_instance = kwargs['ti']
-        cf = task_instance.xcom_pull(key='tour_info', task_ids='read_cf_info') or [] # cultural_facilities
-        fs = task_instance.xcom_pull(key='tour_info', task_ids='read_fs_info') or [] # festivals
-        ls = task_instance.xcom_pull(key='tour_info', task_ids='read_ls_info') or [] # leisure_sports
-        ts = task_instance.xcom_pull(key='tour_info', task_ids='read_ts_info') or [] # tourist_spots
+        cf = task_instance.xcom_pull(key='cf_info', task_ids='read_cf_info') or [] # cultural_facilities
+        fs = task_instance.xcom_pull(key='fs_info', task_ids='read_fs_info') or [] # festivals
+        ls = task_instance.xcom_pull(key='ls_info', task_ids='read_ls_info') or [] # leisure_sports
+        ts = task_instance.xcom_pull(key='ts_info', task_ids='read_ts_info') or [] # tourist_spots
         
-        all_tour_id = cf+fs+ls+ts
+        all_tour_data = cf + fs + ls + ts
+
         try:
-            reviews = ReviewDataGenerator(all_tour_id)
+            reviews = ReviewDataGenerator(all_tour_data)
         except Exception as e:
             task_instance.log.error(f'Error occurred while creating review data: {e}')
             raise
@@ -97,6 +100,7 @@ with DAG(
             'file': 'cultural_facilities', 
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
+            'category': 'cf',
         },
     )
 
@@ -107,6 +111,7 @@ with DAG(
             'file': 'festivals',
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
+            'category': 'fs',
         },
     )
 
@@ -117,6 +122,7 @@ with DAG(
             'file': 'leisure_sports', 
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
+            'category': 'ls',
         },
     )
 
@@ -127,6 +133,7 @@ with DAG(
             'file': 'tourist_spots',
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
+            'category': 'ts',
         },
     )
 
