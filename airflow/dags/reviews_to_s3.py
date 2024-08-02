@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from ReviewDataGenerator import *
 from io import StringIO
@@ -23,9 +24,9 @@ with DAG(
     's3_upload_reviews',
     default_args=default_args,
     description='Create random review data and upload to S3',
-    schedule_interval="0 11 * * 3",
+    schedule_interval="0 11 * * *",
     start_date=datetime(2024, 7, 1),
-    catchup=False,
+    catchup=True,
 ) as dag:
 
     def readTour(file, base_key, bucket_name, **kwargs):
@@ -69,7 +70,7 @@ with DAG(
         reviews = task_instance.xcom_pull(key='reviews', task_ids='create_review_data')
 
         # S3 연결
-        hook = S3Hook('aws_conn_id')
+        hook = S3Hook(aws_conn_id='aws_conn_id')
 
         # S3에 적재 (json)
         try:
@@ -142,6 +143,11 @@ with DAG(
             'bucket_name': '{{ var.value.s3_bucket_name }}',
             "data_interval_start": "{{ ds }}",
         }
+    )
+
+    trigger_reviews_to_redshift = TriggerDagRunOperator(
+        task_id="trigger_reviews_to_redshift",
+        trigger_dag_id="reviews_to_redshift", # reviews_to_redshift DAG를 트리거
     )
 
     # 작업 순서 정의
