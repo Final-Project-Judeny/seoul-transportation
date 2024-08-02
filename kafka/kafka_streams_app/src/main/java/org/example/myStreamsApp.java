@@ -86,11 +86,17 @@ public class myStreamsApp {
                         ((ObjectNode) node).remove("bstatnId");
                         ((ObjectNode) node).remove("lstcarAt");
 
-                        //역 이름: 괄호 제거
+                        //역 이름: 괄호 제거 + 응암순환(상선) 인 경우 응암으로 변경
                         String statnNmValue = node.get("statnNm").asText();
+
                         if (statnNmValue.contains("(")) {
                             statnNmValue = statnNmValue.replaceAll("\\(.*\\)", "").trim();
                             ((ObjectNode) node).put("statnNm", statnNmValue);
+                        }
+
+                        // '응암순환'을 '응암'으로 변경
+                        if ("응암순환".equals(statnNmValue)) {
+                            ((ObjectNode) node).put("statnNm", "응암");
                         }
 
 
