@@ -158,4 +158,4 @@ with DAG(
     )
 
     # 작업 순서 정의
-    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3
+    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3 >> trigger_reviews_to_redshift
