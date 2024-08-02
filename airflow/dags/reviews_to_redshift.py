@@ -51,7 +51,7 @@ with DAG(
     # s3에 합쳐진 데이터를 업로드
     def UploadS3(bucket_name, **kwargs):
         task_instance = kwargs['ti']
-        combined_df = task_instance.xcom_pull(key='combined_df', task_id='read_s3')
+        combined_df = task_instance.xcom_pull(key='combined_df', task_ids='read_s3')
 
         try:
             hook = S3Hook(aws_conn_id='aws_conn_id')
