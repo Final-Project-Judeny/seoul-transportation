@@ -24,6 +24,7 @@ def ReviewDataGenerator(all_tour_id):
         hour = r.randint(0, 23)
         minute = r.randint(0, 59)
         second = r.randint(0, 59)
+        logging.info(f"{year}-{month}-{day} {hour}:{minute}:{second}")
         timestamp = datetime(year, month, day, hour, minute, second).strftime('%Y%m%d%H%M%S')
         
         # Score

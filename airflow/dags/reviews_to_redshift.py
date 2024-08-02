@@ -90,7 +90,7 @@ with DAG(
         task_id = "s3_to_redshift",
         s3_bucket = '{{ var.value.s3_bucket_name }}',
         s3_key = "tour/reviews/reviews/reviews.csv",
-        schema = "public",
+        schema = "analytics",
         table = "reviews",
         copy_options=['csv', 'IGNOREHEADER 1', 'DATEFORMAT AS \'auto\''],
         redshift_conn_id = "redshift_conn_id",
