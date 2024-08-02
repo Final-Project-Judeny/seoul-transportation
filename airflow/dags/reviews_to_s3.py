@@ -28,7 +28,7 @@ with DAG(
     catchup=True,
 ) as dag:
 
-    def readTour(file, base_key, bucket_name, **kwargs):
+    def readTour(file, base_key, bucket_name, category, **kwargs):
         task_instance = kwargs['ti']
 
         # S3 연결
