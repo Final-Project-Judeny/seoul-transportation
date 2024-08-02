@@ -243,12 +243,21 @@ services:
     image: mongo:latest
     hostname: mongodb
     container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ***
+      MONGO_INITDB_ROOT_PASSWORD: ***
     ports:
       - "27017:27017"
     volumes:
+      - /home/ubuntu/mongo/mongod.conf:/etc/mongod.conf:rw
+      - /home/ubuntu/mongo/mongod.conf.orig:/etc/mongod.conf.orig:rw
       - mongodb_data:/data/db
+
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
@@ -260,15 +269,22 @@ services:
         condition: any
 
   mongodb-bi-connector:
-    image: dulanic/mongodb-bi-connector:latest
+    image: yiluxiangbei/mongodb-bi-connector:v2.14.4
+    container_name: mongodb-bi-connector
+    restart: always
     ports:
-      - "3307:3307"
+      - 3307:3307
     environment:
       MONGODB_HOST: mongodb
-      MONGODB_PORT: 27017  
+      MONGODB_PORT: 27017
+      MONGO_USERNAME: ***
+      MONGO_PASSWORD: ***
       SCHEMA_REFRESH: 7
     networks:
       - kafka-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       placement:
         constraints:
