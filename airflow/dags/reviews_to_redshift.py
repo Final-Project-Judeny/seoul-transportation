@@ -93,7 +93,7 @@ with DAG(
         s3_key = "tour/reviews/reviews/reviews.csv",
         schema = "analytics",
         table = "reviews",
-        copy_options=['csv', 'IGNOREHEADER 1', "DATEFORMAT 'YYYYMMDDHHMISS'"],
+        copy_options=['csv', 'IGNOREHEADER 1', "TIMEFORMAT 'auto'",],
         redshift_conn_id = "redshift_conn_id",
         aws_conn_id = "aws_conn_id",
         method = "REPLACE",
