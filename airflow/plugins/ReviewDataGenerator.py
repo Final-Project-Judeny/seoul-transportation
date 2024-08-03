@@ -30,7 +30,7 @@ def ReviewDataGenerator(all_tour_data):
             minute = r.randint(0, 59)
             second = r.randint(0, 59)
             logging.info(f"{year}-{month}-{day} {hour}:{minute}:{second}")
-            timestamp = datetime(year, month, day, hour, minute, second).strftime('%Y%m%d%H%M%S')
+            timestamp = datetime(year, month, day, hour, minute, second).isoformat()
         
             # Score
             a, loc, scale = 2, 50, 12
