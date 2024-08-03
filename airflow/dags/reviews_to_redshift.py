@@ -52,7 +52,7 @@ with DAG(
     def UploadS3(bucket_name, **kwargs):
         task_instance = kwargs['ti']
         combined_df = task_instance.xcom_pull(key='combined_df', task_ids='read_s3')
-        combined_df['Timestamp'] = combined_df['Timestamp'].astype(str)
+        task_instance.log.info(f"XCOM-pull: {combined_df}")
 
         try:
             hook = S3Hook(aws_conn_id='aws_conn_id')
