@@ -22,7 +22,7 @@
       - Kafka-Broker : 브로커 역할을 하는 컨테이너로 구성
       - Kafka-Connect : 콘솔(UI) 및 커넥터, Kafka Streams App 컨테이너로 구성
       - Kafka-Zookeeper : 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
-      - Kafka-Mongo : MongoDB 및 MongoDB BI Connector 컨테이너로 구성
+      - Kafka-Mongo : MongoDB, MongoDB BI Connector, CMAK 컨테이너로 구성
 
 **[S3]**<br/>
 - Public : 태블로용 이미지URL 저장
