@@ -16,7 +16,6 @@ def ReviewDataGenerator(all_tour_data):
             
             # Randomly select a tour data (pair of contentid and title, and category)
             tour_data = r.choice(all_tour_data)
-            logging.info(f"tour_data")
             tourid = tour_data['contentid']
             title = tour_data['title']
             category = tour_data['category']
