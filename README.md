@@ -13,7 +13,7 @@
 
 ## Infra
 **[EC2]**<br/>
-- Bastion-Host: 직접적인 쉘 접근을 막기 위한 방화벽 역할
+- Bastion-Host : 직접적인 쉘 접근을 막기 위한 방화벽 역할
   - Airflow 클러스터
     - Airflow 1: 웹 크롤링 작업을 위한 Selenium 컨테이너 두 개를 포함한 Airflow 구성
     - Airflow 2: API 데이터 크롤링 작업을 위한 기본적인 Airflow 구성
