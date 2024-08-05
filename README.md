@@ -84,6 +84,7 @@
 - Kafka Streams App: Kafka Streams와 실시간 데이터 ELT
 - MongoDB: 실시간 데이터 Data Mart 및 서비스 DB
 - MongoDB BI Connector: 태블로와 MongoDB 데이터 연동
+- CMAK : JMX포트를 이용한 구체적인 Kafka Metric을 모니터링
 
 **[Kafka Stremas]**<br/>
 📌 myStreamsApp.java
