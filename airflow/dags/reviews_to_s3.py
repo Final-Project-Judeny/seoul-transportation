@@ -80,7 +80,7 @@ with DAG(
                 task_instance.log.error(f'Error occurred while creating {station}역 review data: {e}')
                 raise
         
-        task_instance.xcom_push(key='reviews', value=reviews.to_dict(orient='records'))
+        task_instance.xcom_push(key='reviews', value=reviews.to_dict(orient='records', force_ascii=False, indet=4))
 
 
     def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
@@ -96,11 +96,10 @@ with DAG(
 
         # S3에 적재 (json)
         try:
-            result_json = reviews.to_json(orient='records', force_ascii=False, indent=4)
             json_file_name = f"관광지_리뷰_{data_interval_start}.json"
             json_key = f"{base_key}/reviews/{json_file_name}"
             hook.load_string(
-                string_data=result_json,
+                string_data=reviews,
                 key=json_key,
                 bucket_name=bucket_name,
                 replace=True
