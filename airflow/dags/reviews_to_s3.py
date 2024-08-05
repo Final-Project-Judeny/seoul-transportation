@@ -87,7 +87,7 @@ with DAG(
         task_instance = kwargs['ti']
         reviews = task_instance.xcom_pull(key='reviews', task_ids='create_review_data')
 
-        if reviews.empty():
+        if reviews.empty:
             task_instance.log.error("No reviews data available.")
             raise ValueError("No reviews data available.")
 
