@@ -19,10 +19,10 @@
     - Airflow 2: API 데이터 크롤링 작업을 위한 기본적인 Airflow 구성
 
   -  Kafka 클러스터
-    - Kafka-Broker: 브로커 역할을 하는 컨테이너로 구성
-    - Kafka-Connect: 콘솔(UI) 및 커넥터, 카프카스트림즈 기능을 제공하는 컨테이너로 구성
-    - Kafka-Zookeeper: 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
-    - Kafka-Mongo: MongoDB 및 MongoDB BI Connector 컨테이너로 구성
+      - Kafka-Broker: 브로커 역할을 하는 컨테이너로 구성
+      - Kafka-Connect: 콘솔(UI) 및 커넥터, 카프카스트림즈 기능을 제공하는 컨테이너로 구성
+      - Kafka-Zookeeper: 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
+      - Kafka-Mongo: MongoDB 및 MongoDB BI Connector 컨테이너로 구성
 ### S3
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
