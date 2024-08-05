@@ -23,7 +23,7 @@ with DAG(
     's3_upload_reviews',
     default_args=default_args,
     description='Create random review data and upload to S3',
-    schedule_interval="0 11 * * *",
+    schedule_interval="0 2 * * *",
     start_date=datetime(2024, 7, 31),
     catchup=True,
 ) as dag:
