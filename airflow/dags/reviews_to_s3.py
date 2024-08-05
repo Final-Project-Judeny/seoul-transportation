@@ -171,12 +171,5 @@ with DAG(
         }
     )
 
-    trigger_reviews_to_redshift = TriggerDagRunOperator(
-        task_id="trigger_reviews_to_redshift",
-        trigger_dag_id="redshift_upload_reviews", # reviews_to_redshift DAG를 트리거
-        execution_date='{{ ds }}',
-        reset_dag_run=True,
-    )
-
     # 작업 순서 정의
-    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3 >> trigger_reviews_to_redshift
+    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3
