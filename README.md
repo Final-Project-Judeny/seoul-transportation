@@ -12,8 +12,27 @@
 </div>
 
 ## Infra
-[Infra 관련해서 적어야 하는 내용들 있다면 적어주세요! 따로 없다면 해당 부분 삭제하셔도 좋습니다.
-github Actions/sink 관련하여 작성해 주시면 좋을 것 같아요.]
+### EC2
+ ┗━ Bastion-Host: 직접적인 쉘 접근을 막기 위한 방화벽 역할
+    ┣━ Airflow 클러스터
+    ┃   ┣━ Airflow 1: 웹 크롤링 작업을 위한 Selenium 컨테이너 두 개를 포함한 Airflow 구성
+    ┃   ┗━ Airflow 2: API 데이터 크롤링 작업을 위한 기본적인 Airflow 구성
+    ┃
+    ┗━ Kafka 클러스터
+        ┣━ Kafka-Broker: 브로커 역할을 하는 컨테이너로 구성
+        ┣━ Kafka-Connect: 콘솔(UI) 및 커넥터, 카프카스트림즈 기능을 제공하는 컨테이너로 구성
+        ┣━ Kafka-Zookeeper: 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
+        ┗━ Kafka-Mongo: MongoDB 및 MongoDB BI Connector 컨테이너로 구성
+### S3
+ ┣━ Public : 태블로용 이미지URL 저장
+ ┗━ Private : Raw 데이터 저장
+
+Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
+
+Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
+
+Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
+
 
 ## Airflow: 관광 데이터
 **[Dags]**<br/>
