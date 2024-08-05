@@ -27,11 +27,9 @@
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
 
-- Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
-
-- Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
-
-- Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
+### Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
+### Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
+### Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
 
 
 ## Airflow: 관광 데이터
