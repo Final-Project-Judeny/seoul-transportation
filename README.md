@@ -12,7 +12,7 @@
 </div>
 
 ## Infra
-### EC2
+**[EC2]**<br/>
 - Bastion-Host: 직접적인 쉘 접근을 막기 위한 방화벽 역할
   - Airflow 클러스터
     - Airflow 1: 웹 크롤링 작업을 위한 Selenium 컨테이너 두 개를 포함한 Airflow 구성
@@ -24,13 +24,14 @@
       - Kafka-Zookeeper: 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
       - Kafka-Mongo: MongoDB 및 MongoDB BI Connector 컨테이너로 구성
 
-- Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
-- Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
-- Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
-
-### S3
+**[S3]**<br/>
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
+
+📌 <br/>
+- Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장<br/>
+- Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재<br/>
+- Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동<br/>
 
 
 
@@ -40,43 +41,45 @@
 
 **[Airflow1]**<br/>
 📌 airflow/docker-compose1.yaml
-- postgres
-- redis
-- airflow-webserver
-- airflow-scheduler
-- airflow-worker
-- airflow-triggerer
-- airflow-init
-- airflow-cli
-- flower
-- git-sync-all
-- selenium1
-- selenium2
+- Airlfow 기본 구성
+  - postgres
+  - redis
+  - airflow-webserver
+  - airflow-scheduler
+  - airflow-worker
+  - airflow-triggerer
+  - airflow-init
+  - airflow-cli
+  - flower
+- git-sync-all : 깃 허브의 변경 내용을 CI/CD 작업
+- selenium1 : 웹 크롤링용 컨테이너 1
+- selenium2 : 웹 크롤링용 컨테이너 2
   
 **[Airflow2]**<br/>
 📌 airflow/docker-compose2.yaml
-- postgres
-- redis
-- airflow-webserver
-- airflow-scheduler
-- airflow-worker
-- airflow-triggerer
-- airflow-init
-- airflow-cli
-- flower
-- git-sync-all
+- Airlfow 기본 구성
+  - postgres
+  - redis
+  - airflow-webserver
+  - airflow-scheduler
+  - airflow-worker
+  - airflow-triggerer
+  - airflow-init
+  - airflow-cli
+  - flower
+- git-sync-all : 깃 허브의 변경 내용을 CI/CD 작업
   
 ## Kafka/Kafka Streams: 실시간 지하철 정보 데이터
 **[Apche Kafka]**<br/>
 📌 kafka/docker-compose.yml
-- zoo1: Zookeeper
+- conduktor-console: 클러스터 모니터링의 기본구성
+  - kafka-schema-registry
+  - kafka-rest-proxy
+  - ksqldb-server
+  - postgresql
 - kafka1: Broker
-- kafka-schema-registry
-- kafka-rest-proxy
+- zoo1: Zookeeper
 - kafka-connect: Http Source Connector, MongoDB Sink Connector
-- ksqldb-server
-- postgresql
-- conduktor-console: 클러스터 모니터링
 - kafka-ui: 클러스터 모니터링(경량화)
 - Kafka Streams App: Kafka Streams와 실시간 데이터 ELT
 - MongoDB: 실시간 데이터 Data Mart 및 서비스 DB
