@@ -7,7 +7,7 @@ import logging
 # curtural_facilities.csv, festivals.csv, leisure_sports.csv, tourist_spots.csv
 # 4개 파일의 contentsid를 받아 랜덤 리뷰 데이터를 생성해 반환하는 함수
 def ReviewDataGenerator(all_tour_data):
-    today_num_of_review = r.randint(30, 100)
+    today_num_of_review = r.randint(10, 50)
     review_df = pd.DataFrame(columns=['UserID', 'TouristSpotID', 'Title', 'Timestamp', 'Score', 'Category'])
     for i in range(today_num_of_review):
         try:
