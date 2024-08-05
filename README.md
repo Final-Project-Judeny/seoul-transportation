@@ -23,13 +23,15 @@
       - Kafka-Connect: 콘솔(UI) 및 커넥터, 카프카스트림즈 기능을 제공하는 컨테이너로 구성
       - Kafka-Zookeeper: 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
       - Kafka-Mongo: MongoDB 및 MongoDB BI Connector 컨테이너로 구성
+
+Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
+Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
+Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
+
 ### S3
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
 
-### Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장
-### Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
-### Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동
 
 
 ## Airflow: 관광 데이터
