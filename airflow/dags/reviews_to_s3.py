@@ -41,9 +41,15 @@ with DAG(
             tour_info = pd.read_csv(StringIO(tour_content))
             tour_info = tour_info.drop_duplicates(subset=['contentid'])
             tour_info['category'] = category
-            filtered_tour_data = tour_info[['contentid', 'title', 'category']].to_dict(orient='records')
+            filtered_tour_data = tour_info[['contentid', 'title', 'category', '역사명']].to_dict(orient='records')
 
             task_instance.log.info("Successfully read csv file.")
+        except pd.errors.EmptyDataError:
+            task_instance.log.error("No data: empty CSV file.")
+            raise
+        except pd.errors.ParserError:
+            task_instance.log.error("Parsing error: invalid CSV file.")
+            raise
         except Exception as e:
             task_instance.log.error(f"Error occurred while reading csv file: {e}") 
             raise
@@ -59,19 +65,31 @@ with DAG(
         ts = task_instance.xcom_pull(key='ts_data', task_ids='read_ts_info') or [] # tourist_spots
         
         all_tour_data = cf + fs + ls + ts
-
-        try:
-            reviews = ReviewDataGenerator(all_tour_data)
-        except Exception as e:
-            task_instance.log.error(f'Error occurred while creating review data: {e}')
-            raise
+        if not all_tour_data:
+            task_instance.log.error("No tour data available.")
+            raise ValueError("No tour data available.")
+        all_stations = pd.Series([item['역사명'] for item in all_tour_data]).unique()
         
-        task_instance.xcom_push(key='reviews', value=reviews)
+        reviews = pd.DataFrame()
+        for station in all_stations:
+            try:
+                station_filter = [item for item in all_tour_data if item['역사명'] == station]
+                review = ReviewDataGenerator(station_filter)
+                reviews = pd.concat([reviews, review])
+            except Exception as e:
+                task_instance.log.error(f'Error occurred while creating {station}역 review data: {e}')
+                raise
+        
+        task_instance.xcom_push(key='reviews', value=reviews.to_dict(orient='records'))
 
 
     def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
         reviews = task_instance.xcom_pull(key='reviews', task_ids='create_review_data')
+
+        if not reviews:
+            task_instance.log.error("No reviews data available.")
+            raise ValueError("No reviews data available.")
 
         # S3 연결
         hook = S3Hook(aws_conn_id='aws_conn_id')
@@ -101,7 +119,7 @@ with DAG(
             'file': 'cultural_facilities', 
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            'category': 'cf',
+            'category': 'cultural_facilities',
         },
     )
 
@@ -112,7 +130,7 @@ with DAG(
             'file': 'festivals',
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            'category': 'fs',
+            'category': 'festivals',
         },
     )
 
@@ -123,7 +141,7 @@ with DAG(
             'file': 'leisure_sports', 
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            'category': 'ls',
+            'category': 'leisure_sports',
         },
     )
 
@@ -134,7 +152,7 @@ with DAG(
             'file': 'tourist_spots',
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            'category': 'ts',
+            'category': 'tourist_spots',
         },
     )
 
@@ -153,12 +171,5 @@ with DAG(
         }
     )
 
-    trigger_reviews_to_redshift = TriggerDagRunOperator(
-        task_id="trigger_reviews_to_redshift",
-        trigger_dag_id="redshift_upload_reviews", # reviews_to_redshift DAG를 트리거
-        execution_date='{{ ds }}',
-        reset_dag_run=True,
-    )
-
     # 작업 순서 정의
-    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3 >> trigger_reviews_to_redshift
+    [readCF, readFS, readLS, readTS] >> create_review_data >> upload_to_s3
