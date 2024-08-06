@@ -226,7 +226,7 @@ with DAG(
     trigger_glue_job = GlueJobOperator(
         task_id='trigger_judeny_reviews_etl_glue_job',
         job_name='Judeny_reviews_etl',
-        script_location='s3://team-okky-2-bucket/glue/assets/Judeny_reviews_etl.py',
+        script_location='s3://aws-glue-assets-862327261051-ap-northeast-2/scripts/Judeny-reviews-etl.py',
         iam_role_name='{{ var.value.glue_iam_role }}',
         region_name='ap-northeast-2',
         aws_conn_id='aws_conn_id',
