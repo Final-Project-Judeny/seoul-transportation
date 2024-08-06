@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
+from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from ReviewDataGenerator import *
 from io import StringIO
@@ -221,8 +222,23 @@ with DAG(
         }
     )
 
+    # AWS Glue Job 실행 및 완료 대기
+    trigger_glue_job = GlueJobOperator(
+        task_id='trigger_judeny_reviews_etl_glue_job',
+        job_name='Judeny-reviews_etl',
+        script_location='s3://team-okky-2-bucket/glue/assets/Judeny-reviews_etl.py',
+        iam_role_name='{{ var.value.glue_iam_role }}',
+        region_name='ap-northeast-2',
+        aws_conn_id='aws_conn_id',
+        script_args={
+            '--data_interval_start': '{{ ds }}'
+        }
+    )
+
+
     # 작업 순서 정의
     read_cf >> create_cf_review >> upload_cf_to_s3
     read_fs >> create_fs_review >> upload_fs_to_s3
     read_ls >> create_ls_review >> upload_ls_to_s3
     read_ts >> create_ts_review >> upload_ts_to_s3
+    [upload_cf_to_s3, upload_fs_to_s3, upload_ls_to_s3, upload_ts_to_s3] >> trigger_glue_job
