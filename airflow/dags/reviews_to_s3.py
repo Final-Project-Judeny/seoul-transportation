@@ -231,7 +231,8 @@ with DAG(
         region_name='ap-northeast-2',
         aws_conn_id='aws_conn_id',
         script_args={
-            '--data_interval_start': '{{ ds }}'
+            '--data_interval_start': '{{ ds }}',
+            '--JOB_NAME': 'Judeny_reviews_etl'
         }
     )
 
