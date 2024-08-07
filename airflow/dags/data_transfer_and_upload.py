@@ -2,6 +2,8 @@ from airflow import DAG
 from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.sensors.glue import GlueJobSensor
 from datetime import timedelta, datetime
+from airflow.models import Variable
+from alert import task_fail_slack_alert
 
 # with DAG 구문을 사용하여 DAG 작성
 with DAG(
@@ -12,7 +14,8 @@ with DAG(
     default_args={
         "retries" : 1,
         "retry_delay" : timedelta(minutes=3),
-        "depends_on_past" : False,  
+        "depends_on_past" : False,
+        'on_failure_callback': task_fail_slack_alert,
     }
 ) as dag:
 

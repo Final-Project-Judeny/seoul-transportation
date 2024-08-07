@@ -9,6 +9,8 @@ import io
 import pytz
 import xmltodict
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.models import Variable
+from alert import task_fail_slack_alert
 
 # S3에서 파일을 다운로드하고 DataFrame으로 로드하는 함수
 def load_csv_from_s3(bucket_name, object_name):
@@ -21,8 +23,8 @@ def fetch_and_upload_festivals(bucket_name, object_name, execution_date, **kwarg
     
     existing_df = load_csv_from_s3(bucket_name, object_name)
     
-    url = "http://apis.data.go.kr/B551011/KorService1/areaBasedList1"
-    service_key = "DE3jI7XDLquqXd/wMkfkM0uWUodeEdCCbEwKImXOsBA9mg7ge34GzyGBmEkt2J75EpgBxnOYj8CSkGXOLHDwWQ=="
+    url = Variable.get("area_url")
+    service_key = Variable.get("service_key")
     
     all_results = []
     
@@ -158,6 +160,7 @@ with DAG(
         "retires" : 1,
         "retry_delay" : timedelta(minutes=3),
         "depends_on_past" : False,
+        'on_failure_callback': task_fail_slack_alert,
     },
 ) as dag:
     
