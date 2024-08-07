@@ -3,6 +3,8 @@ from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOp
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
+from alert import task_fail_slack_alert
+
 
 default_args = {
     'owner': 'airflow',
@@ -11,6 +13,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    'on_failure_callback': task_fail_slack_alert,
 }
 
 with DAG(

@@ -2,8 +2,8 @@ from airflow import DAG
 from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.sensors.glue import GlueJobSensor
 from datetime import timedelta, datetime
-from airflow.models import Variable
 from alert import task_fail_slack_alert
+
 
 # with DAG 구문을 사용하여 DAG 작성
 with DAG(

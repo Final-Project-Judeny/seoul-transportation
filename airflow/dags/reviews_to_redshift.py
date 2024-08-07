@@ -6,6 +6,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime, timedelta
 import pandas as pd
 from io import StringIO
+from alert import task_fail_slack_alert
 
 default_args = {
     'owner': 'airflow',
@@ -14,6 +15,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    'on_failure_callback': task_fail_slack_alert,
 }
 
 with DAG(
