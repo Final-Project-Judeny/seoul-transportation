@@ -4,12 +4,18 @@ from airflow.sensors.external_task import ExternalTaskSensor
 from datetime import datetime
 from airflow.utils.trigger_rule import TriggerRule
 from datetime import timedelta
+from alert import task_fail_slack_alert
+
+default_args = {
+    'on_failure_callback': task_fail_slack_alert  # 실패 시 알림
+}
 
 with DAG(
     dag_id = 's3_upload_check_sensor',
     start_date=datetime(2024, 7, 23),
     schedule_interval='40 2 * * 3',
-    catchup=False
+    catchup=False,
+    default_args=default_args,
 ) as dag:
     
     sensor_A = ExternalTaskSensor(

@@ -9,6 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 import json
 from datetime import datetime, timedelta
+from alert import task_fail_slack_alert
+
 
 default_args = {
     'owner': 'airflow',
@@ -17,6 +19,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    'on_failure_callback': task_fail_slack_alert,
 }
 
 with DAG(
