@@ -6,6 +6,8 @@ import pandas as pd
 import requests
 import json
 import xmltodict
+from airflow.models import Variable
+from alert import task_fail_slack_alert
 
 # API 호출 및 파일 저장 함수
 def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
@@ -15,12 +17,12 @@ def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
     start_date = target_month.replace(day=1)
     end_date = (start_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
     
-    url = "http://apis.data.go.kr/B551011/DataLabService/locgoRegnVisitrDDList"
+    url = Variable.get("monthly_url")
     params = {
         "numOfRows" : 30000,
         "MobileOS": "ETC",
         "MobileApp": "Metravel",
-        "serviceKey": "DE3jI7XDLquqXd/wMkfkM0uWUodeEdCCbEwKImXOsBA9mg7ge34GzyGBmEkt2J75EpgBxnOYj8CSkGXOLHDwWQ==",
+        "serviceKey": Variable.get("service_key"),
         "startYmd": start_date.strftime("%Y%m%d"),
         "endYmd": end_date.strftime("%Y%m%d")
     }
@@ -62,6 +64,7 @@ with DAG(
         'retries': 1,
         'retry_delay': timedelta(minutes=3),
         'depends_on_past': False,
+        'on_failure_callback': task_fail_slack_alert,
     },
 ) as dag:
 
