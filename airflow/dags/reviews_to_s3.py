@@ -151,7 +151,7 @@ with DAG(
         task_id='create_cultural_facilities_review',
         python_callable=createReviews,
         op_kwargs={
-            'category': 'cultural_facilities'
+            'category': 'cultural_facilities',
             "data_interval_start": "{{ ds }}",
         },
     )
@@ -159,7 +159,7 @@ with DAG(
         task_id='create_festivals_review',
         python_callable=createReviews,
         op_kwargs={
-            'category': 'festivals'
+            'category': 'festivals',
             "data_interval_start": "{{ ds }}",
         },
     )
@@ -167,7 +167,7 @@ with DAG(
         task_id='create_leisure_sports_review',
         python_callable=createReviews,
         op_kwargs={
-            'category': 'leisure_sports'
+            'category': 'leisure_sports',
             "data_interval_start": "{{ ds }}",
         },
     )
@@ -175,7 +175,7 @@ with DAG(
         task_id='create_tourist_spots_review',
         python_callable=createReviews,
         op_kwargs={
-            'category': 'tourist_spots'
+            'category': 'tourist_spots',
             "data_interval_start": "{{ ds }}",
         },
     )
