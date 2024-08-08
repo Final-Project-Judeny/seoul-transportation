@@ -57,7 +57,7 @@ with DAG(
         task_instance.xcom_push(key=f'{file}_data', value=filtered_tour_data)
         task_instance.log.info(f"pushed data: \n{filtered_tour_data}")
 
-    def createReviews(category, **kwargs):
+    def createReviews(category, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
         tour_data = task_instance.xcom_pull(key=f'{category}_data', task_ids=f'read_{category}_info') or []
         
@@ -70,7 +70,7 @@ with DAG(
         for station in all_stations:
             try:
                 station_filter = [item for item in tour_data if item['역사명'] == station]
-                review = ReviewDataGenerator(station_filter)
+                review = ReviewDataGenerator(station_filter, data_interval_start)
                 reviews = pd.concat([reviews, review])
             except Exception as e:
                 task_instance.log.error(f'Error occurred while creating {station}역 review data: {e}')
@@ -152,6 +152,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'cultural_facilities'
+            "data_interval_start": "{{ ds }}",
         },
     )
     create_fs_review = PythonOperator(
@@ -159,6 +160,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'festivals'
+            "data_interval_start": "{{ ds }}",
         },
     )
     create_ls_review = PythonOperator(
@@ -166,6 +168,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'leisure_sports'
+            "data_interval_start": "{{ ds }}",
         },
     )
     create_ts_review = PythonOperator(
@@ -173,6 +176,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'tourist_spots'
+            "data_interval_start": "{{ ds }}",
         },
     )
 
