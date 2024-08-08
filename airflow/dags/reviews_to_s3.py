@@ -4,6 +4,7 @@ from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from ReviewDataGenerator import *
+from alert import task_fail_slack_alert
 from io import StringIO
 
 import pandas as pd
@@ -18,6 +19,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 10,
     'retry_delay': timedelta(minutes=2),
+    'on_failure_callback': task_fail_slack_alert,  # 실패 시 알림
 }
 
 with DAG(
@@ -25,7 +27,7 @@ with DAG(
     default_args=default_args,
     description='Create random review data and upload to S3',
     schedule_interval="0 2 * * *",
-    start_date=datetime(2024, 5, 1),
+    start_date=datetime(2024, 8, 1),
     catchup=True,
 ) as dag:
 
