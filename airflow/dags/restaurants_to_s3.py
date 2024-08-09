@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-#from RestaurantInfoCrawler import *
 from RestaurantInfoCrawler import *
 from io import StringIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -191,7 +190,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour/',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         }
     )
 
