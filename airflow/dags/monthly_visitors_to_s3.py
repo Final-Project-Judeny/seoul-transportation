@@ -58,7 +58,7 @@ def fetch_and_upload_monthly_visitors(logical_date, bucket_name):
 with DAG(
     dag_id='monthly_visitors_to_s3',
     start_date=datetime(2024, 7, 1),
-    schedule_interval='0 11 2 * *',
+    schedule_interval='0 2 2 * *',
     catchup=False,
     default_args={
         'retries': 1,

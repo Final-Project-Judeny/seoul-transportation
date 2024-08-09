@@ -13,7 +13,7 @@ default_args = {
 with DAG(
     dag_id = 's3_upload_check_sensor',
     start_date=datetime(2024, 7, 23),
-    schedule_interval='40 2 * * 3',
+    schedule_interval='55 1 * * 3',
     catchup=False,
     default_args=default_args,
 ) as dag:

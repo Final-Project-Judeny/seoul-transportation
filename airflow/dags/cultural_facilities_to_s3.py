@@ -83,7 +83,7 @@ def fetch_and_upload_cultural_facilities(bucket_name, object_name, **kwargs):
 with DAG(
     dag_id="s3_upload_cultural_facilities",
     start_date=datetime(2024, 7, 23),
-    schedule_interval="45 2 * * 3",
+    schedule_interval="0 2 * * 3",
     catchup=False,
     default_args={
         "retires": 1,
