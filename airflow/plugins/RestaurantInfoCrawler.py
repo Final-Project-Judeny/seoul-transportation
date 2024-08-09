@@ -73,6 +73,9 @@ def RestaurantInfoCrawler(args):
         logging.error(f"Webdriver connection is fail.: {e}")
         return
 
+    driver.set_page_load_timeout(30)  # 페이지 로드 타임아웃 설정
+    driver.set_script_timeout(30)     # 스크립트 실행 타임아웃 설정
+    
     url = "https://www.diningcode.com/list.dc?query="
     with driver:
         driver.get(url+encoding( f'{station_nm}역 {line}' ))
