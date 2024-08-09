@@ -68,10 +68,10 @@ with DAG(
         return result
 
     @task
-    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data):
+    def uploadToS3(base_key, bucket_name, data_interval_start, crawled_data_list):
         # 크롤링된 데이터를 모두 병합
         result = []
-        for data in crawled_data:
+        for data in crawled_data_list:
             result.extend(data)
 
         # S3 연결
@@ -141,7 +141,7 @@ with DAG(
         base_key='tour/',
         bucket_name='{{ var.value.s3_bucket_name }}',
         data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}",
-        crawled_data=[crawl_A_tasks, crawl_B_tasks]
+        crawled_data_list=[crawl_A_tasks, crawl_B_tasks]
     )
 
     # 작업 순서 정의
