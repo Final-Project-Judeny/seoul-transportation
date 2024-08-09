@@ -61,7 +61,7 @@ with DAG(
     @task
     def webCrawling(start, end, selenium_num, **kwargs):
         task_instance = kwargs['ti']
-        station_info = task_instance.xcom_pull(key='return_value', task_ids='read_station_info')
+        station_info = task_instance.xcom_pull(key='return_value', task_ids='readStations')
 
         # 각 역에 대해 식당 정보 크롤
         stations = station_info[start:end]
@@ -153,8 +153,17 @@ with DAG(
     task_ranges_B = create_task_ranges(station_info, selenium_num=2)
 
     # Dynamic Task Mapping을 사용한 크롤링 작업 실행
-    crawl_A_tasks = webCrawling.expand(task_ranges_A)
-    crawl_B_tasks = webCrawling.expand(task_ranges_B)
+    crawl_A_tasks = webCrawling.expand(
+        start=[range_[0] for range_ in task_ranges_A],
+        end=[range_[1] for range_ in task_ranges_A],
+        selenium_num=[range_[2] for range_ in task_ranges_A]
+    )
+    
+    crawl_B_tasks = webCrawling.expand(
+        start=[range_[0] for range_ in task_ranges_B],
+        end=[range_[1] for range_ in task_ranges_B],
+        selenium_num=[range_[2] for range_ in task_ranges_B]
+    )
 
     upload_to_s3 = uploadToS3(
         base_key='tour/',
