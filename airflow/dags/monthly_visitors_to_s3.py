@@ -10,10 +10,10 @@ from airflow.models import Variable
 from alert import task_fail_slack_alert
 
 # API 호출 및 파일 저장 함수
-def fetch_and_upload_monthly_visitors(execution_date, bucket_name):
+def fetch_and_upload_monthly_visitors(logical_date, bucket_name):
     
-    # execution_date 기준 2개월 전의 첫날과 마지막날 설정
-    target_month = (execution_date.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+    # logical_date 기준 2개월 전의 첫날과 마지막날 설정
+    target_month = (logical_date.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
     start_date = target_month.replace(day=1)
     end_date = (start_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
     

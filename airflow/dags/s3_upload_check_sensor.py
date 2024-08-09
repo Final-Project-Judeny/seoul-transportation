@@ -26,7 +26,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
-        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
+        execution_date_fn=lambda logical_date: logical_date + timedelta(minutes=5),
     )
     
     sensor_B = ExternalTaskSensor(
@@ -37,7 +37,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
-        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
+        execution_date_fn=lambda logical_date: logical_date + timedelta(minutes=5),
     )
     
     sensor_C = ExternalTaskSensor(
@@ -48,7 +48,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
-        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
+        execution_date_fn=lambda logical_date: logical_date + timedelta(minutes=5),
     )
     
     sensor_D = ExternalTaskSensor(
@@ -59,7 +59,7 @@ with DAG(
         allowed_states=['success'],
         mode='poke',
         poke_interval=30,
-        execution_date_fn=lambda execution_date: execution_date + timedelta(minutes=5),
+        execution_date_fn=lambda logical_date: logical_date + timedelta(minutes=5),
     )
     
     trigger_glue_jobs_dag = TriggerDagRunOperator(
