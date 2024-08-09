@@ -6,8 +6,8 @@
 
 ## 파이프라인 구조
 <div align="center">
-
-![파이프라인](https://github.com/user-attachments/assets/843b5b14-0ee7-44b1-b762-a28e9477250c)
+  
+![파이프라인](https://github.com/user-attachments/assets/364d4c94-6760-4d4d-84b6-1d03f9384627)
 
 </div>
 
@@ -28,19 +28,28 @@
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
 
-📌 <br/>
-- Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장<br/>
-- Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재<br/>
-- Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동<br/>
+**[Glue]** <br/>
+- S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
+
+**[Redshift]** <br/>
+- 간단한 쿼리 작업 및 전처리된 데이터 저장
+
+**[Tableau Cloud]** <br/>
+- 시각화 대시보드 - Redshift와 MongoDB 연동<br/>
 
 
 
 ## Airflow: 관광 데이터
 **[Dags]**<br/>
-- 파일이름.py: Dag 설명
-- restaurants_to_s3.py: 매주 화요일 11시(UTC+9), 음식점 데이터를 셀레니움을 이용해 크롤링하여 json파일 형식으로 S3에 저장
-- restaurants_to_redshift.py: 매주 수요일 11시(UTC+9), S3에 저장된 음식점 데이터를 하나의 csv파일로 통합한 뒤 Redshift에 Bulk Update
-- reviews_to_s3.py: 매일 11시(UTC+9), 음식점을 제외한 관광 데이터에 대한 리뷰 데이터를 생성해 json파일 형식으로 S3에 저장
+- **restaurants_to_s3.py** : 매주 화요일 11시(UTC+9), 음식점 데이터를 셀레니움을 이용해 크롤링하여 json파일 형식으로 S3에 저장
+- **restaurants_to_redshift.py** : 매주 수요일 11시(UTC+9), S3에 저장된 음식점 데이터를 하나의 csv파일로 통합한 뒤 Redshift에 Bulk Update
+- **reviews_to_s3.py** : 매일 11시(UTC+9), 음식점을 제외한 관광 데이터에 대한 리뷰 데이터를 생성해 json파일 형식으로 S3에 저장
+- **s3_upload_check_sensor.py** : S3에 저장하는 DAG의 완료를 감지하여 Glue Job을 트리거하는 DAG를 실행시키는 DAG
+- **cultural_facilities_to_s3.py**, **festivals_to_s3.py**, **leisure_sports_to_s3.py**, **tourist_spots_to_s3.py**
+  - 매주 수요일 11시(UTC+9), 관광공사 API를 이용해 관광타입 별로 JSON 데이터를 S3에 저장
+- **monthly_visitors_to_s3.py** : 매달 2일 11시(UTC+9), 관광공사 API를 이용해 두달 전의 지역 지차체별로 현지인, 외지인, 외국인 방문객 수를 S3에 저장
+- **data_transfer_and_upload.py** : Glue Job을 순차적으로 트리거. Glue에서 Success 상태가 반환될 때, 다음 태스크로 넘어가게 설정 
+
 
 **[Airflow1]**<br/>
 📌 airflow/docker-compose1.yaml
