@@ -83,7 +83,7 @@ def fetch_and_upload_tourist_spots(bucket_name, object_name, **kwargs):
 with DAG(
     dag_id="s3_upload_tourist_spots",
     start_date=datetime(2024, 7, 23),
-    schedule_interval="45 2 * * 3",
+    schedule_interval="0 2 * * 3",
     catchup=False,
     default_args={
         "retires": 1,
