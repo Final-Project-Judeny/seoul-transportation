@@ -101,7 +101,7 @@
 **[Kafka Stremas]**<br/>
 📌 myStreamsApp.java
 - Kafka Streams App 생성
-- 서비스 제공 요구사항대로 ELT
+- 서비스 제공 요구사항대로 ETL
   - 불필요한 데이터 파트 제거
   - 역 이름: 괄호 제거 및 변경
   - 시간 값 변환
