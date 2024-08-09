@@ -154,7 +154,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'cultural_facilities',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         },
     )
     create_fs_review = PythonOperator(
@@ -162,7 +162,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'festivals',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         },
     )
     create_ls_review = PythonOperator(
@@ -170,7 +170,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'leisure_sports',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         },
     )
     create_ts_review = PythonOperator(
@@ -178,7 +178,7 @@ with DAG(
         python_callable=createReviews,
         op_kwargs={
             'category': 'tourist_spots',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         },
     )
 
@@ -189,7 +189,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
             'category_eng': 'cultural_facilities',
             'category_kor': '수도권_문화시설'
         }
@@ -200,7 +200,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
             'category_eng': 'festivals',
             'category_kor': '수도권_축제행사'
         }
@@ -211,7 +211,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
             'category_eng': 'leisure_sports',
             'category_kor': '수도권_레포츠'
         }
@@ -222,7 +222,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
             'category_eng': 'tourist_spots',
             'category_kor': '수도권_관광지'
         }
@@ -238,7 +238,7 @@ with DAG(
         region_name='ap-northeast-2',
         aws_conn_id='aws_conn_id',
         script_args={
-            '--target_date': '{{ ds }}',
+            '--target_date': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         }
     )
 

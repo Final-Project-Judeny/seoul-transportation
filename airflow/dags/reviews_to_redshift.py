@@ -77,7 +77,7 @@ with DAG(
         python_callable=ReadS3,
         op_kwargs={
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         },
     )
 

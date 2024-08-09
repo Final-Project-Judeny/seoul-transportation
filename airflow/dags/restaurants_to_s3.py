@@ -190,7 +190,7 @@ with DAG(
         op_kwargs={
             'base_key': 'tour/',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
-            "data_interval_start": "{{ ds }}",
+            "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         }
     )
 
