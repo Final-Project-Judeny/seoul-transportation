@@ -30,23 +30,16 @@ with DAG(
 ) as dag:
 
     @task
-    def readStations(base_key, bucket_name, **kwargs):
-        task_instance = kwargs['ti']
-
+    def readStations(base_key, bucket_name):
         # S3 연결
         hook = S3Hook('aws_conn_id')
 
         # station 정보 로드
-        try:
-            station_key = f"{base_key}basic_data/station/subway_info_with_coordinates.csv"
-            file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
-            station_info = pd.read_csv(StringIO(file_content))
-            filtered_station_info = station_info[['역사명', '호선']]
-            task_instance.log.info("Successfully read csv file.")
-        except Exception as e:
-            task_instance.log.error(f"Error occurred while read csv file: {e}") 
-            raise
-
+        station_key = f"{base_key}basic_data/station/subway_info_with_coordinates.csv"
+        file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
+        station_info = pd.read_csv(StringIO(file_content))
+        filtered_station_info = station_info[['역사명', '호선']]
+        
         return filtered_station_info.to_dict(orient='records')
 
     @task
@@ -58,10 +51,7 @@ with DAG(
         return ranges
 
     @task
-    def webCrawling(start, end, selenium_num, station_info):
-        task_instance = kwargs['ti']
-        
-        # 각 역에 대해 식당 정보 크롤
+    def webCrawling(station_info, start, end, selenium_num):
         stations = station_info[start:end]
         args = [(row['역사명'], row['호선'], selenium_num) for row in stations]
 
@@ -73,75 +63,57 @@ with DAG(
                     data = future.result()
                     result.extend(data)
                 except Exception as e:
-                    task_instance.log.error(f"Error occurred while crawling: {e}")
-                    raise
+                    raise Exception(f"Error occurred while crawling: {e}")
         
-        task_instance.xcom_push(key=f'data_{start}_{end}', value=result)
-        task_instance.log.info(f"Data part {start} ~ {end} is successfully crawled.")
+        return result
 
     @task
-    def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
-        task_instance = kwargs['ti']
+    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data):
+        # 크롤링된 데이터를 모두 병합
         result = []
-
-        # 모든 크롤링 데이터 병합
-        for key in task_instance.xcom_pull(key=None, task_ids=None):
-            if key.startswith('data_'):
-                result.extend(task_instance.xcom_pull(key=key, task_ids=None) or [])
+        for data in crawled_data:
+            result.extend(data)
 
         # S3 연결
         hook = S3Hook('aws_conn_id')
 
         # S3에 적재 (json)
-        try:
-            result_json = json.dumps(result, ensure_ascii=False, indent=4)
-            json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
-            json_key = f"{base_key}restaurants/{json_file_name}"
-            hook.load_string(
-                string_data=result_json,
-                key=json_key,
-                bucket_name=bucket_name,
-                replace=True
-            )
-            task_instance.log.info(f"Successfully uploaded json file to S3.")
-        except Exception as e:
-            task_instance.log.error(f"Error occurred while uploading json file to S3: {e}")
-            raise
+        result_json = json.dumps(result, ensure_ascii=False, indent=4)
+        json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
+        json_key = f"{base_key}restaurants/{json_file_name}"
+        hook.load_string(
+            string_data=result_json,
+            key=json_key,
+            bucket_name=bucket_name,
+            replace=True
+        )
 
         # S3에 적재 (csv)
-        try:
-            flattened_data = []
-            for item in result:
-                flat_item = {
-                    'timestamp': item['timestamp'],
-                    'station': item['station'],
-                    'name': item['name'],
-                    'score': item['score'],
-                    'category': ', '.join(item.get('category', [])),
-                    'hashtag': ', '.join(item.get('hashtag', [])),
-                    'image': item['image'],
-                    'loc_x': item['loc_x'],
-                    'loc_y': item['loc_y']
-                }
-                flattened_data.append(flat_item)
+        flattened_data = []
+        for item in result:
+            flat_item = {
+                'timestamp': item['timestamp'],
+                'station': item['station'],
+                'name': item['name'],
+                'score': item['score'],
+                'category': ', '.join(item.get('category', [])),
+                'hashtag': ', '.join(item.get('hashtag', [])),
+                'image': item['image'],
+                'loc_x': item['loc_x'],
+                'loc_y': item['loc_y']
+            }
+            flattened_data.append(flat_item)
 
-            # DataFrame 생성 및 CSV 변환
-            result_df = pd.DataFrame(flattened_data)
-            result_csv = result_df.to_csv(index=False)
-            csv_file_name = f"restaurants.csv"
-            csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
-            hook.load_string(
-                string_data=result_csv,
-                key=csv_key,
-                bucket_name=bucket_name,
-                replace=True
-            )
-            task_instance.log.info(f"Successfully uploaded csv file to S3.")
-        except Exception as e:
-            task_instance.log.error(f"Error occurred while uploading csv file to S3: {e}")
-            raise
-        
-        task_instance.log.info(f"Done!")
+        result_df = pd.DataFrame(flattened_data)
+        result_csv = result_df.to_csv(index=False)
+        csv_file_name = f"restaurants.csv"
+        csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
+        hook.load_string(
+            string_data=result_csv,
+            key=csv_key,
+            bucket_name=bucket_name,
+            replace=True
+        )
 
     # 작업 정의 및 연결
     station_info = readStations(base_key='tour/', bucket_name='{{ var.value.s3_bucket_name }}')
@@ -152,23 +124,24 @@ with DAG(
 
     # Dynamic Task Mapping을 사용한 크롤링 작업 실행
     crawl_A_tasks = webCrawling.expand(
+        station_info=station_info,
         start=[range_[0] for range_ in task_ranges_A],
         end=[range_[1] for range_ in task_ranges_A],
-        selenium_num=[range_[2] for range_ in task_ranges_A],
-        station_info=station_info
+        selenium_num=[range_[2] for range_ in task_ranges_A]
     )
     
     crawl_B_tasks = webCrawling.expand(
+        station_info=station_info,
         start=[range_[0] for range_ in task_ranges_B],
         end=[range_[1] for range_ in task_ranges_B],
-        selenium_num=[range_[2] for range_ in task_ranges_B],
-        station_info=station_info
+        selenium_num=[range_[2] for range_ in task_ranges_B]
     )
 
     upload_to_s3 = uploadToS3(
         base_key='tour/',
         bucket_name='{{ var.value.s3_bucket_name }}',
-        data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}"
+        data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}",
+        crawled_data=[crawl_A_tasks, crawl_B_tasks]
     )
 
     # 작업 순서 정의
