@@ -68,10 +68,10 @@ with DAG(
         return result
 
     @task
-    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data_list):
+    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data):
         # 크롤링된 데이터를 모두 병합
         result = []
-        for data in crawled_data_list:
+        for data in crawled_data:
             result.extend(data)
 
         # S3 연결
@@ -137,11 +137,11 @@ with DAG(
         selenium_num=task_ranges_B.map(lambda x: x[2])
     )
 
-    upload_to_s3 = uploadToS3(
-        base_key='tour/',
-        bucket_name='{{ var.value.s3_bucket_name }}',
-        data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}",
-        crawled_data_list=[crawl_A_tasks, crawl_B_tasks]
+    upload_to_s3 = uploadToS3.expand(
+    base_key='tour/',
+    bucket_name='{{ var.value.s3_bucket_name }}',
+    data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}",
+    crawled_data=[crawl_A_tasks, crawl_B_tasks]
     )
 
     # 작업 순서 정의
