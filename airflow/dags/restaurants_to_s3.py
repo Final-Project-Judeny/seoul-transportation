@@ -68,7 +68,7 @@ with DAG(
         return result
 
     @task
-    def uploadToS3(base_key, bucket_name, data_interval_start, crawled_data_list):
+    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data_list):
         # 크롤링된 데이터를 모두 병합
         result = []
         for data in crawled_data_list:
@@ -125,16 +125,16 @@ with DAG(
     # Dynamic Task Mapping을 사용한 크롤링 작업 실행
     crawl_A_tasks = webCrawling.expand(
         station_info=station_info,
-        start=[range_[0] for range_ in task_ranges_A],
-        end=[range_[1] for range_ in task_ranges_A],
-        selenium_num=[range_[2] for range_ in task_ranges_A]
+        start=task_ranges_A.map(lambda x: x[0]),
+        end=task_ranges_A.map(lambda x: x[1]),
+        selenium_num=task_ranges_A.map(lambda x: x[2])
     )
     
     crawl_B_tasks = webCrawling.expand(
         station_info=station_info,
-        start=[range_[0] for range_ in task_ranges_B],
-        end=[range_[1] for range_ in task_ranges_B],
-        selenium_num=[range_[2] for range_ in task_ranges_B]
+        start=task_ranges_B.map(lambda x: x[0]),
+        end=task_ranges_B.map(lambda x: x[1]),
+        selenium_num=task_ranges_B.map(lambda x: x[2])
     )
 
     upload_to_s3 = uploadToS3(
