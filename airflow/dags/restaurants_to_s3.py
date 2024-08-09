@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.decorators import task
 from RestaurantInfoCrawler import *
 from io import StringIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -46,18 +47,23 @@ with DAG(
             task_instance.log.error(f"Error occurred while read csv file: {e}") 
             raise
 
-        task_instance.xcom_push(key='station_info', value=filtered_station_info)
+        task_instance.xcom_push(key='station_info', value=filtered_station_info.to_dict(orient='records'))
 
-    def webCrawling(selenium_num, start, end, **kwargs):
+    @task
+    def create_task_ranges(station_info, selenium_num):
+        # 200개의 작업 단위로 작업 범위를 나눔
+        batch_size = 200
+        ranges = [(i, min(i + batch_size, len(station_info)), selenium_num) 
+                  for i in range(0, len(station_info), batch_size)]
+        return ranges
+
+    def webCrawling(start, end, selenium_num, **kwargs):
         task_instance = kwargs['ti']
         station_info = task_instance.xcom_pull(key='station_info', task_ids='read_station_info')
 
-        # 모든 역에 대해 식당 정보 크롤
-        if end < len(station_info):
-            stations = station_info.iloc[start:end]
-        else:
-            stations = station_info.iloc[start: ]
-        args = [(row['역사명'], row['호선'], selenium_num) for _, row in stations.iterrows()]
+        # 각 역에 대해 식당 정보 크롤
+        stations = station_info[start:end]
+        args = [(row['역사명'], row['호선'], selenium_num) for row in stations]
 
         result = []
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -70,22 +76,23 @@ with DAG(
                     task_instance.log.error(f"Error occurred while crawling: {e}")
                     raise
         
-        task_instance.xcom_push(key='data', value=result)
+        task_instance.xcom_push(key=f'data_{start}_{end}', value=result)
         task_instance.log.info(f"Data part {start} ~ {end} is successfully crawled.")
 
     def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
-        data_A1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A1') or []
-        data_A2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A2') or []
-        data_B1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B1') or []
-        data_B2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B2') or []
+        result = []
+
+        # 모든 크롤링 데이터 병합
+        for key in task_instance.xcom_pull(key=None, task_ids=None):
+            if key.startswith('data_'):
+                result.extend(task_instance.xcom_pull(key=key, task_ids=None) or [])
 
         # S3 연결
         hook = S3Hook('aws_conn_id')
 
         # S3에 적재 (json)
         try:
-            result = data_A1 + data_A2 + data_B1 + data_B2
             result_json = json.dumps(result, ensure_ascii=False, indent=4)
             json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
             json_key = f"{base_key}restaurants/{json_file_name}"
@@ -144,46 +151,16 @@ with DAG(
         },
     )
 
-    webCrawling_A1 = PythonOperator(
-        task_id='webCrawling_A1',
-        python_callable=webCrawling,
-        op_kwargs={
-            'selenium_num': 1,
-            'start': 0,
-            'end': 200,
-        },
-    )
+    station_info = read_station_info.output  # XCom output을 참조
 
-    webCrawling_A2 = PythonOperator(
-        task_id='webCrawling_A2',
-        python_callable=webCrawling,
-        op_kwargs={
-            'selenium_num': 1,
-            'start': 200,
-            'end': 400,
-        },
-    )
+    # 작업 범위 생성
+    task_ranges_A = create_task_ranges(station_info, 1)
+    task_ranges_B = create_task_ranges(station_info, 2)
 
-    webCrawling_B1 = PythonOperator(
-        task_id='webCrawling_B1',
-        python_callable=webCrawling,
-        op_kwargs={
-            'selenium_num': 2,
-            'start': 400,
-            'end': 600,
-        },
-    )
+    # Dynamic Task Mapping을 사용한 크롤링 작업 실행
+    crawl_A_tasks = webCrawling.expand(task_ranges_A)
+    crawl_B_tasks = webCrawling.expand(task_ranges_B)
 
-    webCrawling_B2 = PythonOperator(
-        task_id='webCrawling_B2',
-        python_callable=webCrawling,
-        op_kwargs={
-            'selenium_num': 2,
-            'start': 600,
-            'end': 800,
-        },
-    )
-    
     upload_to_s3 = PythonOperator(
         task_id='upload_to_s3',
         python_callable=uploadToS3,
@@ -195,7 +172,4 @@ with DAG(
     )
 
     # 작업 순서 정의
-    read_station_info >> [webCrawling_A1, webCrawling_B1]
-    webCrawling_A1 >> webCrawling_A2
-    webCrawling_B1 >> webCrawling_B2
-    [webCrawling_A2, webCrawling_B2]>> upload_to_s3
+    read_station_info >> [crawl_A_tasks, crawl_B_tasks] >> upload_to_s3
