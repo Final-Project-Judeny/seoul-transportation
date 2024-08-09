@@ -68,7 +68,7 @@ with DAG(
         return result
 
     @task
-    def uploadToS3(base_key, bucket_name, data_interval_start, *crawled_data):
+    def uploadToS3(base_key, bucket_name, crawled_data, data_interval_start):
         # 크롤링된 데이터를 모두 병합
         result = []
         for data in crawled_data:
@@ -137,7 +137,7 @@ with DAG(
         selenium_num=task_ranges_B.map(lambda x: x[2])
     )
 
-    upload_to_s3 = uploadToS3.expand(
+    upload_to_s3 = uploadToS3(
     base_key='tour/',
     bucket_name='{{ var.value.s3_bucket_name }}',
     data_interval_start="{{ data_interval_start.strftime('%Y-%m-%d') }}",
