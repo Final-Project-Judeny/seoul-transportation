@@ -47,7 +47,6 @@ with DAG(
             task_instance.log.error(f"Error occurred while read csv file: {e}") 
             raise
 
-        # XCom에 저장
         return filtered_station_info.to_dict(orient='records')
 
     @task
@@ -59,10 +58,9 @@ with DAG(
         return ranges
 
     @task
-    def webCrawling(start, end, selenium_num, **kwargs):
+    def webCrawling(start, end, selenium_num, station_info):
         task_instance = kwargs['ti']
-        station_info = task_instance.xcom_pull(key='return_value', task_ids='readStations')
-
+        
         # 각 역에 대해 식당 정보 크롤
         stations = station_info[start:end]
         args = [(row['역사명'], row['호선'], selenium_num) for row in stations]
@@ -149,20 +147,22 @@ with DAG(
     station_info = readStations(base_key='tour/', bucket_name='{{ var.value.s3_bucket_name }}')
 
     # 작업 범위 생성
-    task_ranges_A = create_task_ranges(station_info, selenium_num=1)
-    task_ranges_B = create_task_ranges(station_info, selenium_num=2)
+    task_ranges_A = create_task_ranges(station_info=station_info, selenium_num=1)
+    task_ranges_B = create_task_ranges(station_info=station_info, selenium_num=2)
 
     # Dynamic Task Mapping을 사용한 크롤링 작업 실행
     crawl_A_tasks = webCrawling.expand(
         start=[range_[0] for range_ in task_ranges_A],
         end=[range_[1] for range_ in task_ranges_A],
-        selenium_num=[range_[2] for range_ in task_ranges_A]
+        selenium_num=[range_[2] for range_ in task_ranges_A],
+        station_info=station_info
     )
     
     crawl_B_tasks = webCrawling.expand(
         start=[range_[0] for range_ in task_ranges_B],
         end=[range_[1] for range_ in task_ranges_B],
-        selenium_num=[range_[2] for range_ in task_ranges_B]
+        selenium_num=[range_[2] for range_ in task_ranges_B],
+        station_info=station_info
     )
 
     upload_to_s3 = uploadToS3(
