@@ -28,10 +28,14 @@
 - Public : 태블로용 이미지URL 저장
 - Private : Raw 데이터 저장
 
-📌 <br/>
-- Redshift : 간단한 쿼리 작업 및 전처리된 데이터 저장<br/>
-- Glue : S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재<br/>
-- Tableau : 시각화 대시보드 - Redshift와 MongoDB 연동<br/>
+**[Glue]** <br/>
+- S3에 저장된 Raw데이터를 전처리 작업과 함께 Redshift에 적재
+
+**[Redshift]** <br/>
+- 간단한 쿼리 작업 및 전처리된 데이터 저장
+
+**[Tableau Cloud]** <br/>
+- 시각화 대시보드 - Redshift와 MongoDB 연동<br/>
 
 
 
