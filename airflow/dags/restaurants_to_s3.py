@@ -29,7 +29,7 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    def readStations(base_key, bucket_name, **kwargs):
+    def readStations(bucket_name, **kwargs):
         task_instance = kwargs['ti']
 
         # S3 연결
@@ -37,7 +37,7 @@ with DAG(
 
         # station 정보 로드
         try:
-            station_key = f"{base_key}basic_data/station/subway_info_with_coordinates.csv"
+            station_key = f"tour/basic_data/station/subway_info_with_coordinates.csv"
             file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
             station_info = pd.read_csv(StringIO(file_content))
             filtered_station_info = station_info[['역사명', '호선']]
@@ -48,7 +48,7 @@ with DAG(
 
         task_instance.xcom_push(key='station_info', value=filtered_station_info)
 
-    def webCrawling(selenium_num, start, end, **kwargs):
+    def webCrawling(selenium_num, start, end, data_interval_start, task_tag, bucket_name, **kwargs):
         task_instance = kwargs['ti']
         station_info = task_instance.xcom_pull(key='station_info', task_ids='read_station_info')
 
@@ -70,25 +70,49 @@ with DAG(
                     task_instance.log.error(f"Error occurred while crawling: {e}")
                     raise
         
-        task_instance.xcom_push(key='data', value=result)
-        task_instance.log.info(f"Data part {start} ~ {end} is successfully crawled.")
+        # S3 연결
+        hook = S3Hook('aws_conn_id')
 
-    def uploadToS3(base_key, bucket_name, data_interval_start, **kwargs):
+        # s3에 저장
+        try:
+            result_json = json.dumps(result, ensure_ascii=False, indent=4)
+            json_file_name = f"수도권_식당_정보_{data_interval_start}_{task_tag}.json"
+            json_key = f"tour/restaurants/{json_file_name}"
+            hook.load_string(
+                string_data=result_json,
+                key=json_key,
+                bucket_name=bucket_name,
+                replace=True
+            )
+            task_instance.log.info(f"Data part {start} ~ {end} is successfully crawled and uploaded to S3.")
+        except Exception as e:
+            task_instance.log.error(f"Error occurred while uploading data part {start} ~ {end} to S3: {e}")
+            raise
+
+    def uploadToS3(bucket_name, data_interval_start, **kwargs):
         task_instance = kwargs['ti']
-        data_A1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A1') or []
-        data_A2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_A2') or []
-        data_B1 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B1') or []
-        data_B2 = task_instance.xcom_pull(key='data', task_ids='webCrawling_B2') or []
 
         # S3 연결
         hook = S3Hook('aws_conn_id')
 
+        # restaurants part 로드
+        result = []
+        try:
+            for task_tag in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4']:
+                station_key = f"tour/restaurants/수도권_식당_정보{data_interval_start}_{task_tag}.json"
+                file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
+                restaurants_part = pd.read_csv(StringIO(file_content))
+                result.extend(restaurants_part)
+            task_instance.log.info("Successfully read restaurants data parts.")
+        except Exception as e:
+            task_instance.log.error(f"Error occurred while read restaurants data part {task_tag}: {e}") 
+            raise
+
         # S3에 적재 (json)
         try:
-            result = data_A1 + data_A2 + data_B1 + data_B2
             result_json = json.dumps(result, ensure_ascii=False, indent=4)
             json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
-            json_key = f"{base_key}restaurants/{json_file_name}"
+            json_key = f"tour/restaurants/{json_file_name}"
             hook.load_string(
                 string_data=result_json,
                 key=json_key,
@@ -121,7 +145,7 @@ with DAG(
             result_df = pd.DataFrame(flattened_data)
             result_csv = result_df.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
-            csv_key = f"{base_key}restaurants/restaurants/{csv_file_name}"
+            csv_key = f"tour/restaurants/restaurants/{csv_file_name}"
             hook.load_string(
                 string_data=result_csv,
                 key=csv_key,
@@ -139,7 +163,6 @@ with DAG(
         task_id='read_station_info',
         python_callable=readStations,
         op_kwargs={
-            'base_key': 'tour/',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
@@ -151,6 +174,9 @@ with DAG(
             'selenium_num': 1,
             'start': 0,
             'end': 100,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'A1',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_A2 = PythonOperator(
@@ -160,6 +186,9 @@ with DAG(
             'selenium_num': 1,
             'start': 100,
             'end': 200,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'A2',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_A3 = PythonOperator(
@@ -169,6 +198,9 @@ with DAG(
             'selenium_num': 1,
             'start': 200,
             'end': 300,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'A3',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_A4 = PythonOperator(
@@ -178,6 +210,9 @@ with DAG(
             'selenium_num': 1,
             'start': 300,
             'end': 400,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'A4',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
 
@@ -188,6 +223,9 @@ with DAG(
             'selenium_num': 2,
             'start': 400,
             'end': 500,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'B1',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_B2 = PythonOperator(
@@ -197,6 +235,9 @@ with DAG(
             'selenium_num': 2,
             'start': 500,
             'end': 600,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'B2',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_B3 = PythonOperator(
@@ -206,6 +247,9 @@ with DAG(
             'selenium_num': 2,
             'start': 600,
             'end': 700,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'B3',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     webCrawling_B4 = PythonOperator(
@@ -215,6 +259,9 @@ with DAG(
             'selenium_num': 2,
             'start': 700,
             'end': 800,
+            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
+            'task_tag': 'B4',
+            'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
     
@@ -222,7 +269,6 @@ with DAG(
         task_id='upload_to_s3',
         python_callable=uploadToS3,
         op_kwargs={
-            'base_key': 'tour/',
             'bucket_name': '{{ var.value.s3_bucket_name }}',
             "data_interval_start": "{{ data_interval_start.strftime('%Y-%m-%d') }}",
         }
