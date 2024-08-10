@@ -20,9 +20,9 @@
 
   -  Kafka 클러스터
       - Kafka-Broker : 브로커 역할을 하는 컨테이너로 구성
-      - Kafka-Connect : 콘솔(UI) 및 커넥터, Kafka Streams App 컨테이너로 구성
+      - Kafka-Connect : 커넥터, Kafka Streams App 컨테이너로 구성
       - Kafka-Zookeeper : 주키퍼 및 기본적인 콘솔 구성에 필요한 컨테이너들로 구성
-      - Kafka-Mongo : MongoDB, MongoDB BI Connector, CMAK 컨테이너로 구성
+      - Kafka-Mongo : MongoDB, MongoDB BI Connector, CMAK, 콘솔 및 모니터링 컨테이너로 구성
 
 **[S3]**<br/>
 - Public : 태블로용 이미지URL 저장
@@ -42,61 +42,7 @@
 ## Airflow: 관광 데이터
 **[Dags]**<br/>
 - **restaurants_to_s3.py** : 매주 화요일 11시(UTC+9), 음식점 데이터를 셀레니움을 이용해 크롤링하여 json파일 형식으로 S3에 저장
-- **restaurants_to_redshift.py** : 매주 수요일 11시(UTC+9), S3에 저장된 음식점 데이터를 하나의 csv파일로 통합한 뒤 Redshift에 Bulk Update
-- **reviews_to_s3.py** : 매일 11시(UTC+9), 음식점을 제외한 관광 데이터에 대한 리뷰 데이터를 생성해 json파일 형식으로 S3에 저장
-- **s3_upload_check_sensor.py** : S3에 저장하는 DAG의 완료를 감지하여 Glue Job을 트리거하는 DAG를 실행시키는 DAG
-- **cultural_facilities_to_s3.py**, **festivals_to_s3.py**, **leisure_sports_to_s3.py**, **tourist_spots_to_s3.py**
-  - 매주 수요일 11시(UTC+9), 관광공사 API를 이용해 관광타입 별로 JSON 데이터를 S3에 저장
-- **monthly_visitors_to_s3.py** : 매달 2일 11시(UTC+9), 관광공사 API를 이용해 두달 전의 지역 지차체별로 현지인, 외지인, 외국인 방문객 수를 S3에 저장
-- **data_transfer_and_upload.py** : Glue Job을 순차적으로 트리거. Glue에서 Success 상태가 반환될 때, 다음 태스크로 넘어가게 설정 
-
-
-**[Airflow1]**<br/>
-📌 airflow/docker-compose1.yaml
-- Airlfow 기본 구성
-  - postgres
-  - redis
-  - airflow-webserver
-  - airflow-scheduler
-  - airflow-worker
-  - airflow-triggerer
-  - airflow-init
-  - airflow-cli
-  - flower
-- git-sync-all : 깃 허브의 변경 내용을 CI/CD 작업
-- selenium1 : 웹 크롤링용 컨테이너 1
-- selenium2 : 웹 크롤링용 컨테이너 2
-  
-**[Airflow2]**<br/>
-📌 airflow/docker-compose2.yaml
-- Airlfow 기본 구성
-  - postgres
-  - redis
-  - airflow-webserver
-  - airflow-scheduler
-  - airflow-worker
-  - airflow-triggerer
-  - airflow-init
-  - airflow-cli
-  - flower
-- git-sync-all : 깃 허브의 변경 내용을 CI/CD 작업
-  
-## Kafka/Kafka Streams: 실시간 지하철 정보 데이터
-**[Apche Kafka]**<br/>
-📌 kafka/docker-compose.yml
-- conduktor-console: 클러스터 모니터링의 기본구성
-  - kafka-schema-registry
-  - kafka-rest-proxy
-  - ksqldb-server
-  - postgresql
-- kafka1: Broker
-- zoo1: Zookeeper
-- kafka-connect: Http Source Connector, MongoDB Sink Connector
-- kafka-ui: 클러스터 모니터링(경량화)
-- Kafka Streams App: Kafka Streams와 실시간 데이터 ELT
-- MongoDB: 실시간 데이터 Data Mart 및 서비스 DB
-- MongoDB BI Connector: 태블로와 MongoDB 데이터 연동
-- CMAK : JMX포트를 이용한 구체적인 Kafka Metric을 모니터링
+- **restaurants_to_redshift.py** : 매주 수요일 11림
 
 **[Kafka Stremas]**<br/>
 📌 myStreamsApp.java
