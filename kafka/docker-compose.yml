@@ -226,12 +226,38 @@ services:
       CDK_CLUSTERS_0_SCHEMAREGISTRY_URL: "http://kafka-schema-registry:8081"
       CDK_CLUSTERS_0_KAFKACONNECTS_0_URL: "http://kafka-connect:8083"
       CDK_CLUSTERS_0_KAFKACONNECTS_0_NAME: "full stack kafka connect"
+      CDK_ORGANIZATION_NAME: "Judeny"
+      CDK_ADMIN_EMAIL: "admin@admin.io"
+      CDK_ADMIN_PASSWORD: "admin"
+      CDK_MONITORING_CORTEX-URL: http://conduktor-monitoring:9009/
+      CDK_MONITORING_ALERT-MANAGER-URL: http://conduktor-monitoring:9010/
+      CDK_MONITORING_CALLBACK-URL: http://conduktor-console:8080/monitoring/api/
+      CDK_MONITORING_NOTIFICATIONS-CALLBACK-URL: http://localhost:8080
     networks:
       - kafka-net
     deploy:
       placement:
         constraints:
-          - node.labels.connect == true
+          - node.labels.mongo == true
+      replicas: 1
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: any
+
+  conduktor-monitoring:
+    hostname: conduktor-monitoring
+    container_name: conduktor-monitoring
+    image: conduktor/conduktor-console-cortex:1.24.1
+    environment:
+      CDK_CONSOLE-URL: "http://conduktor-console:8080"
+
+    networks:
+      - kafka-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.mongo == true
       replicas: 1
       update_config:
         parallelism: 1
@@ -277,8 +303,8 @@ services:
     environment:
       MONGODB_HOST: mongodb
       MONGODB_PORT: 27017
-      MONGO_USERNAME: ***
-      MONGO_PASSWORD: ***
+      MONGO_USERNAME: Judeny
+      MONGO_PASSWORD: Judeny123!
       SCHEMA_REFRESH: 7
     networks:
       - kafka-net
@@ -352,6 +378,7 @@ services:
         parallelism: 1
       restart_policy:
         condition: any
+
 
 volumes:
   pg_data: {}
