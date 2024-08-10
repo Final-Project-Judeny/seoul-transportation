@@ -150,16 +150,33 @@ with DAG(
         op_kwargs={
             'selenium_num': 1,
             'start': 0,
-            'end': 200,
+            'end': 100,
         },
     )
-
     webCrawling_A2 = PythonOperator(
         task_id='webCrawling_A2',
         python_callable=webCrawling,
         op_kwargs={
             'selenium_num': 1,
+            'start': 100,
+            'end': 200,
+        },
+    )
+    webCrawling_A3 = PythonOperator(
+        task_id='webCrawling_A3',
+        python_callable=webCrawling,
+        op_kwargs={
+            'selenium_num': 1,
             'start': 200,
+            'end': 300,
+        },
+    )
+    webCrawling_A4 = PythonOperator(
+        task_id='webCrawling_A4',
+        python_callable=webCrawling,
+        op_kwargs={
+            'selenium_num': 1,
+            'start': 300,
             'end': 400,
         },
     )
@@ -170,16 +187,33 @@ with DAG(
         op_kwargs={
             'selenium_num': 2,
             'start': 400,
-            'end': 600,
+            'end': 500,
         },
     )
-
     webCrawling_B2 = PythonOperator(
         task_id='webCrawling_B2',
         python_callable=webCrawling,
         op_kwargs={
             'selenium_num': 2,
+            'start': 500,
+            'end': 600,
+        },
+    )
+    webCrawling_B3 = PythonOperator(
+        task_id='webCrawling_B3',
+        python_callable=webCrawling,
+        op_kwargs={
+            'selenium_num': 2,
             'start': 600,
+            'end': 700,
+        },
+    )
+    webCrawling_B4 = PythonOperator(
+        task_id='webCrawling_B4',
+        python_callable=webCrawling,
+        op_kwargs={
+            'selenium_num': 2,
+            'start': 700,
             'end': 800,
         },
     )
@@ -196,6 +230,6 @@ with DAG(
 
     # 작업 순서 정의
     read_station_info >> [webCrawling_A1, webCrawling_B1]
-    webCrawling_A1 >> webCrawling_A2
-    webCrawling_B1 >> webCrawling_B2
-    [webCrawling_A2, webCrawling_B2]>> upload_to_s3
+    webCrawling_A1 >> webCrawling_A2 >> webCrawling_A3 >> webCrawling_A4
+    webCrawling_B1 >> webCrawling_B2 >> webCrawling_B3 >> webCrawling_B4
+    [webCrawling_A4, webCrawling_B4]>> upload_to_s3
