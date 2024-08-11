@@ -3,7 +3,6 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from RestaurantInfoCrawler import *
 from io import StringIO
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 import json
@@ -60,15 +59,12 @@ with DAG(
         args = [(row['역사명'], row['호선'], selenium_num) for _, row in stations.iterrows()]
 
         result = []
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(RestaurantInfoCrawler, arg) for arg in args]
-            for future in as_completed(futures):
-                try:
-                    data = future.result()
-                    result.extend(data)
-                except Exception as e:
-                    task_instance.log.error(f"Error occurred while crawling: {e}")
-                    raise
+        for arg in args:
+            try:
+                data = RestaurantInfoCrawler(arg)
+                result.extend(data)
+            except Exception as e:
+                task_instance.log.error(f"Error occurred while crawling: {e}")
         
         # S3 연결
         hook = S3Hook('aws_conn_id')
