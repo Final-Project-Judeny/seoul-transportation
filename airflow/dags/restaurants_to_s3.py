@@ -106,42 +106,9 @@ with DAG(
             task_instance.log.error(f"Error occurred while read restaurants data part {data_interval_start}_{task_tag}: {e}")
             raise
 
-        # S3에 적재 (json)
-        try:
-            result_json = json.dumps(result, ensure_ascii=False, indent=4)
-            json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
-            json_key = f"tour/restaurants/{json_file_name}"
-            hook.load_string(
-                string_data=result_json,
-                key=json_key,
-                bucket_name=bucket_name,
-                replace=True
-            )
-            task_instance.log.info(f"Successfully uploaded json file to S3.")
-        except Exception as e:
-            task_instance.log.error(f"Error occurred while uploading json file to S3: {e}")
-            raise
-
         # S3에 적재 (csv)
         try:
-            flattened_data = []
-            for item in result:
-                flat_item = {
-                    'timestamp': item['timestamp'],
-                    'station': item['station'],
-                    'name': item['name'],
-                    'score': item['score'],
-                    'category': ', '.join(item.get('category', [])),
-                    'hashtag': ', '.join(item.get('hashtag', [])),
-                    'image': item['image'],
-                    'loc_x': item['loc_x'],
-                    'loc_y': item['loc_y']
-                }
-                flattened_data.append(flat_item)
-
-            # DataFrame 생성 및 CSV 변환
-            result_df = pd.DataFrame(flattened_data)
-            result_csv = result_df.to_csv(index=False)
+            result_csv = result.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
             csv_key = f"tour/restaurants/restaurants/{csv_file_name}"
             hook.load_string(
