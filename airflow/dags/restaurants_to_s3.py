@@ -95,7 +95,7 @@ with DAG(
         result = []
         try:
             for task_tag in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4']:
-                station_key = f"tour/restaurants/수도권_식당_정보{data_interval_start}_{task_tag}.json"
+                station_key = f"tour/restaurants/수도권_식당_정보_{data_interval_start}_{task_tag}.json"
                 file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
                 restaurants_part = pd.read_csv(StringIO(file_content))
                 result.extend(restaurants_part)
