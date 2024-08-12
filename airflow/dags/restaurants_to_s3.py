@@ -94,52 +94,21 @@ with DAG(
         # restaurants part 로드
         result = []
         try:
-            for task_tag in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4']:
+            for task_tag in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3']:
                 station_key = f"tour/restaurants/수도권_식당_정보_{data_interval_start}_{task_tag}.json"
                 file_content = hook.read_key(key=station_key, bucket_name=bucket_name)
-                restaurants_part = pd.read_csv(StringIO(file_content))
-                result.extend(restaurants_part)
+                restaurants_part = pd.read_json(StringIO(file_content))
+                task_instance.log.info(f"restaurants part for {data_interval_start}_{task_tag}: {restaurants_part}")
+                result = pd.concat([result, restaurants_part], ignore_index=True)
             task_instance.log.info("Successfully read restaurants data parts.")
+            task_instance.log.info(f"result: {result}")
         except Exception as e:
-            task_instance.log.error(f"Error occurred while read restaurants data part {task_tag}: {e}") 
-            raise
-
-        # S3에 적재 (json)
-        try:
-            result_json = json.dumps(result, ensure_ascii=False, indent=4)
-            json_file_name = f"수도권_식당_정보_{data_interval_start}.json"
-            json_key = f"tour/restaurants/{json_file_name}"
-            hook.load_string(
-                string_data=result_json,
-                key=json_key,
-                bucket_name=bucket_name,
-                replace=True
-            )
-            task_instance.log.info(f"Successfully uploaded json file to S3.")
-        except Exception as e:
-            task_instance.log.error(f"Error occurred while uploading json file to S3: {e}")
+            task_instance.log.error(f"Error occurred while read restaurants data part {data_interval_start}_{task_tag}: {e}")
             raise
 
         # S3에 적재 (csv)
         try:
-            flattened_data = []
-            for item in result:
-                flat_item = {
-                    'timestamp': item['timestamp'],
-                    'station': item['station'],
-                    'name': item['name'],
-                    'score': item['score'],
-                    'category': ', '.join(item.get('category', [])),
-                    'hashtag': ', '.join(item.get('hashtag', [])),
-                    'image': item['image'],
-                    'loc_x': item['loc_x'],
-                    'loc_y': item['loc_y']
-                }
-                flattened_data.append(flat_item)
-
-            # DataFrame 생성 및 CSV 변환
-            result_df = pd.DataFrame(flattened_data)
-            result_csv = result_df.to_csv(index=False)
+            result_csv = result.to_csv(index=False)
             csv_file_name = f"restaurants.csv"
             csv_key = f"tour/restaurants/restaurants/{csv_file_name}"
             hook.load_string(
@@ -248,18 +217,6 @@ with DAG(
             'bucket_name': '{{ var.value.s3_bucket_name }}',
         },
     )
-    webCrawling_B4 = PythonOperator(
-        task_id='webCrawling_B4',
-        python_callable=webCrawling,
-        op_kwargs={
-            'selenium_num': 2,
-            'start': 700,
-            'end': 800,
-            'data_interval_start': "{{ data_interval_start.strftime('%Y-%m-%d') }}",
-            'task_tag': 'B4',
-            'bucket_name': '{{ var.value.s3_bucket_name }}',
-        },
-    )
     
     upload_to_s3 = PythonOperator(
         task_id='upload_to_s3',
@@ -273,5 +230,5 @@ with DAG(
     # 작업 순서 정의
     read_station_info >> [webCrawling_A1, webCrawling_B1]
     webCrawling_A1 >> webCrawling_A2 >> webCrawling_A3 >> webCrawling_A4
-    webCrawling_B1 >> webCrawling_B2 >> webCrawling_B3 >> webCrawling_B4
-    [webCrawling_A4, webCrawling_B4]>> upload_to_s3
+    webCrawling_B1 >> webCrawling_B2 >> webCrawling_B3
+    [webCrawling_A4, webCrawling_B3]>> upload_to_s3
