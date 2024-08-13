@@ -2,7 +2,17 @@
 - **프로젝트 기간:** 2024.07 ~ 2024.08
 - **프로젝트 인원:** 우수하, 권대혁, 김지원, 문송은, 좌상원 총 5인
 - **프로젝트 개요:** 수도권 지하철을 타고 떠나는 여행을 콘셉트로 대시보드에서 역을 클릭하면 해당 역의 실시간 지하철 정보와 주변 맛집/관광 데이터를 제공합니다.<br/>
-[대시보드 화면 가이드본 추가예정]
+- **대시보드 시각화**
+<div align="center">
+<img width="1202" alt="지하철대시보드" src="https://github.com/user-attachments/assets/ca8ab050-7c71-4bdb-9871-460afe9e5135">
+</div>
+
+<br/>
+
+![관광정보대시보드](https://github.com/user-attachments/assets/2cd685b6-e9b2-4574-b0ad-c95c6bba5007)
+<br/>
+
+![분석대시보드](https://github.com/user-attachments/assets/8143e45f-9c28-4b62-b1c4-1f025e5934ec)
 
 ## 파이프라인 구조
 <div align="center">
