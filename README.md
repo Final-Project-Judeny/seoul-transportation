@@ -52,7 +52,8 @@
 ## Airflow: 관광 데이터
 **[Dags]**<br/>
 - **restaurants_to_s3.py** : 매주 화요일 11시(UTC+9), 음식점 데이터를 셀레니움을 이용해 크롤링하여 json파일 형식으로 S3에 저장
-- **restaurants_to_redshift.py** : 매주 수요일 11림
+- **restaurants_to_redshift.py**: 매주 수요일 11시(UTC+9), S3에 저장된 음식점 데이터를 하나의 csv파일로 통합한 뒤 Redshift에 Bulk Update
+- **reviews_to_s3.py**: 매일 11시(UTC+9), 음식점을 제외한 관광 데이터에 대한 리뷰 데이터를 생성해 json파일 형식으로 S3에 저장
 
 ## Kafka/Kafka Streams: 실시간 지하철 정보 데이터
 **[Kafka Streams]**<br/>
