@@ -54,6 +54,7 @@
 - **restaurants_to_s3.py** : 매주 화요일 11시(UTC+9), 음식점 데이터를 셀레니움을 이용해 크롤링하여 json파일 형식으로 S3에 저장
 - **restaurants_to_redshift.py** : 매주 수요일 11림
 
+## Kafka/Kafka Streams: 실시간 지하철 정보 데이터
 **[Kafka Stremas]**<br/>
 📌 myStreamsApp.java
 - Kafka Streams App 생성
