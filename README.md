@@ -55,7 +55,7 @@
 - **restaurants_to_redshift.py** : 매주 수요일 11림
 
 ## Kafka/Kafka Streams: 실시간 지하철 정보 데이터
-**[Kafka Stremas]**<br/>
+**[Kafka Streams]**<br/>
 📌 myStreamsApp.java
 - Kafka Streams App 생성
 - 서비스 제공 요구사항대로 ETL
@@ -69,4 +69,4 @@
 - 필요한 의존성 추가
 
 📌 Dockerfile
-- pom.xml과 myStreamsApp 코드를 기반으로 Kafka Streams Docker 이미지 생성
+- pom.xml과 myStreamsApp 코드를 기반으로 Kafka Streams Docker Image 생성
