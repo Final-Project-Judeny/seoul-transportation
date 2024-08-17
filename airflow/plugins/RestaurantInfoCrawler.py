@@ -77,98 +77,108 @@ def RestaurantInfoCrawler(args):
     driver.set_script_timeout(30)     # 스크립트 실행 타임아웃 설정
     
     url = "https://www.diningcode.com/list.dc?query="
-    with driver:
-        driver.get(url+encoding( f'{station_nm}역 {line}' ))
-
-        # 로딩 대기
+    retries = 5
+    for attempt in range(retries):
         try:
-            WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script('return document.readyState') == 'complete'
-        )
-        except Exception as e:
-            logging.error(f"Page load timeout: {e}")
-            return
+            with driver:
+                driver.get(url+encoding( f'{station_nm}역 {line}' ))
 
-        # 크롤링 시작 시각
-        crawl_timestamp = datetime.now().isoformat()
-
-        # 맛집 로딩
-        while True:
-            try:
-                # 더보기 버튼 로딩 대기 후 클릭
-                more_button = WebDriverWait(driver, 3, poll_frequency=0.5).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, '.SearchMore.upper'))
+                # 로딩 대기
+                try:
+                    WebDriverWait(driver, 10).until(
+                    lambda d: d.execute_script('return document.readyState') == 'complete'
                 )
-                more_button.click()
-            except:
-                # 더보기 버튼이 없을 때 while문 종료
-                logging.info("No more 'Load more' button.")
+                except Exception as e:
+                    logging.error(f"Page load timeout: {e}")
+                    return
+
+                # 크롤링 시작 시각
+                crawl_timestamp = datetime.now().isoformat()
+
+                # 맛집 로딩
+                while True:
+                    try:
+                        # 더보기 버튼 로딩 대기 후 클릭
+                        more_button = WebDriverWait(driver, 3, poll_frequency=0.5).until(
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, '.SearchMore.upper'))
+                        )
+                        more_button.click()
+                    except:
+                        # 더보기 버튼이 없을 때 while문 종료
+                        logging.info("No more 'Load more' button.")
+                        break
+
+                # 리스트, 지도에서 식당, 좌표 데이터 크롤링
+                restaurant_elements = driver.find_elements(By.XPATH, '//a[contains(@class, "PoiBlock")]')
+                map_elements = driver.find_elements(By.XPATH, '//a[@class="Marker"]')
+
+                restaurants = []
+
+                for i in range(min(len(restaurant_elements), len(map_elements))):
+                    restaurant = restaurant_elements[i]
+                    map = map_elements[i]
+                    try:
+                        # 이름 추출
+                        name_element = restaurant.find_element(By.XPATH, './/div[@class="InfoHeader"]')
+                        name = name_element.text[name_element.text.find(' ')+1:]
+
+                        # 리뷰평점 추출
+                        score = restaurant.find_element(By.XPATH, './/p[@class="Score"]').text # 점수
+
+                        cat_element = restaurant.find_element(By.XPATH, './/p[@class="Category"]')
+                        category = [cat.text for cat in cat_element.find_elements(By.XPATH, './/span')]
+
+                        # 해쉬태그 추출
+                        hash_element = restaurant.find_element(By.XPATH, './/div[@class="Hash"]')
+                        hashtag = [hash.text for hash in hash_element.find_elements(By.XPATH, './/span[not(@style)]')]
+
+                        # 이미지 추출 (없을 경우 예외 처리)
+                        try:
+                            image_element = restaurant.find_element(By.XPATH, './/img[@class="title"]')
+                            image_url = image_element.get_attribute('src')
+                        except:
+                            image_url = None
+
+                        # 좌표 추출
+                        x = map.get_attribute('data-lng')
+                        y = map.get_attribute('data-lat')
+
+                        # 식당 정보 저장
+                        restaurants.append({
+                            'timestamp': crawl_timestamp,
+                            'station': station_nm,
+                            'name': name,
+                            'score': score,
+                            'category': category,
+                            'hashtag': hashtag,
+                            'image': image_url,
+                            'loc_x': x,
+                            'loc_y': y,
+                        })
+                    except Exception as e:
+                        logging.error(f"Error occurred: {e}")
+                        continue
+                """
+                # 결과 출력
+                for i, restaurant in enumerate(restaurants):
+                    print(f'{i+1}.')
+                    for info in restaurants[i].keys():
+                        print(restaurants[i][info])
+                """
+
+                # JSON 문자열 생성
+        #        result = json.dumps(restaurants, ensure_ascii=False, indent=4)
+                result = restaurants
+
+                logging.info(f"JSON data for {station_nm} was successfully created.")
                 break
 
-        # 리스트, 지도에서 식당, 좌표 데이터 크롤링
-        restaurant_elements = driver.find_elements(By.XPATH, '//a[contains(@class, "PoiBlock")]')
-        map_elements = driver.find_elements(By.XPATH, '//a[@class="Marker"]')
-
-        restaurants = []
-
-        for i in range(min(len(restaurant_elements), len(map_elements))):
-            restaurant = restaurant_elements[i]
-            map = map_elements[i]
-            try:
-                # 이름 추출
-                name_element = restaurant.find_element(By.XPATH, './/div[@class="InfoHeader"]')
-                name = name_element.text[name_element.text.find(' ')+1:]
-
-                # 리뷰평점 추출
-                score = restaurant.find_element(By.XPATH, './/p[@class="Score"]').text # 점수
-
-                cat_element = restaurant.find_element(By.XPATH, './/p[@class="Category"]')
-                category = [cat.text for cat in cat_element.find_elements(By.XPATH, './/span')]
-
-                # 해쉬태그 추출
-                hash_element = restaurant.find_element(By.XPATH, './/div[@class="Hash"]')
-                hashtag = [hash.text for hash in hash_element.find_elements(By.XPATH, './/span[not(@style)]')]
-
-                # 이미지 추출 (없을 경우 예외 처리)
-                try:
-                    image_element = restaurant.find_element(By.XPATH, './/img[@class="title"]')
-                    image_url = image_element.get_attribute('src')
-                except:
-                    image_url = None
-
-                # 좌표 추출
-                x = map.get_attribute('data-lng')
-                y = map.get_attribute('data-lat')
-
-                # 식당 정보 저장
-                restaurants.append({
-                    'timestamp': crawl_timestamp,
-                    'station': station_nm,
-                    'name': name,
-                    'score': score,
-                    'category': category,
-                    'hashtag': hashtag,
-                    'image': image_url,
-                    'loc_x': x,
-                    'loc_y': y,
-                })
-            except Exception as e:
-                logging.error(f"Error occurred: {e}")
-                continue
-        """
-        # 결과 출력
-        for i, restaurant in enumerate(restaurants):
-            print(f'{i+1}.')
-            for info in restaurants[i].keys():
-                print(restaurants[i][info])
-        """
-
-        # JSON 문자열 생성
-#        result = json.dumps(restaurants, ensure_ascii=False, indent=4)
-        result = restaurants
-
-        logging.info(f"JSON data for {station_nm} was successfully created.")
-
+        except WebDriverException as e:
+            logging.error(f"Webdriver connection error occured while crawling. attempt: {attempt + 1} : {e}")
+            if attempt < retries - 1:
+                time.sleep(3) # 잠시 대기 후 재시도
+            else:
+                raise  # 모든 재시도 실패 시 예외 발생
     return result
 
 
