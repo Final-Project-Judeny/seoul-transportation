@@ -92,7 +92,7 @@ with DAG(
         hook = S3Hook('aws_conn_id')
 
         # restaurants part 로드
-        result = []
+        result = pd.DataFrame()
         try:
             for task_tag in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3']:
                 station_key = f"tour/restaurants/수도권_식당_정보_{data_interval_start}_{task_tag}.json"
