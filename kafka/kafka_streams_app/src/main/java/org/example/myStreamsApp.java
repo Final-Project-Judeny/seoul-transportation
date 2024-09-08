@@ -52,7 +52,6 @@ public class myStreamsApp {
         subwayIdMap.put("1081", "경강선");
         subwayIdMap.put("1093", "서해선");
         subwayIdMap.put("1094", "신림선");
-        subwayIdMap.put("1065", "공항철도");
 
         //데이터 변환 부분
         KStream<String, String> transformedStream = stream.mapValues(value -> {
