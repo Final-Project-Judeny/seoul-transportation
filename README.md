@@ -17,7 +17,7 @@
 ## 파이프라인 구조
 <div align="center">
   
-![파이프라인](https://github.com/user-attachments/assets/364d4c94-6760-4d4d-84b6-1d03f9384627)
+![파이프라인](https://github.com/user-attachments/assets/0d31fc2d-93e6-464c-99f7-a0a8773ca90d)
 
 </div>
 
